@@ -367,7 +367,7 @@ if st.session_state.df_combined is not None:
                                                     textfont_size=16, 
                                                     # marker=dict(pattern=dict(shape=["x", "+", "-"]))
                                                     )])
-                fig_sales4.update_layout(title={'text':'Persentase Promotion yang digunakan', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                fig_sales4.update_layout(title={'text':'Persentase Metode Pembayaran yang digunakan', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                                          uniformtext_minsize=12, uniformtext_mode='hide'
                                        )
                 st.plotly_chart(fig_sales4)
