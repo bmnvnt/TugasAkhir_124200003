@@ -419,16 +419,16 @@ if st.session_state.df_combined is not None:
                     )
                 st.plotly_chart(fig2)
 
-            # with kanan:
-            #     labels = filtered_df['Provinces']
-            #     values = filtered_df["Total servis"]
-            #         # cluster_data.loc[values < 2.e6, labels] = 'Other' # Represent only large provinces
-            #     fig3 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.2)])
-            #     fig3.update_layout(legend_y=0.9,
-            #                            title={'text':f'Persentase Provinsi di Cluster {i+1}'}
-            #                            )
-            #         # fig3.update_traces(textinfo='percent+label', textposition='inside')
-            #     st.plotly_chart(fig3, use_container_width=True)
+            with kanan:
+                total2 = filtered_df.groupby('Models')['Total servis'].sum().reset_index()
+                labels = total2['Models']
+                values = total2['Total servis']
+                
+                # Use `hole` to create a donut-like pie chart
+                fig_sales2 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3)])
+                fig_sales2.update_layout(title={'text':'Persentase Model yang terjual', 'x':0.5, 'xanchor':'center', 'yanchor':'top'}
+                                       )
+                st.plotly_chart(fig_sales2)
 
 else:
     st.error("Pemodelan data belum dilakukan. Harap lakukan pemodelan data terlebih dahulu.")
