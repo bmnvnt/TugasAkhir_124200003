@@ -11,7 +11,7 @@ from streamlit_elements import elements, mui, html, dashboard, nivo
 
 
 st.html('style.html')
-st.title("Visualisasi Datas")
+st.title("Visualisasi Data")
 
 tab1,tab2 = st.tabs(["Klastering","Analisa Data"])
 if st.session_state.df_combined is not None:
@@ -28,10 +28,6 @@ if st.session_state.df_combined is not None:
 
         jumlah_data1 = len(st.session_state['df_penjualan1'])
         formatted_number1 = f"{jumlah_data1:,.0f}"
-
-        # df_penjualan1 = st.session_state['df1']
-        # jumlahpelanggan = df_penjualan1["Customer Name"].nunique()
-        # jumlahpelanggan =  f"{jumlahpelanggan:,.0f}"
 
         jumlah_data2 = len(st.session_state['df_servis1'])
         formatted_number2 = f"{jumlah_data2:,.0f}"
@@ -386,10 +382,20 @@ if st.session_state.df_combined is not None:
 
             with r:
                 # st.write(filtered_df)
-                total_dealer = filtered_df["Dealer name"].nunique()
-                # total_dealer = f"{total_dealer:,.0f}"
-                st.metric("Total Dealer", total_dealer)
+                total_dl = filtered_df["Dealer name"].nunique()
+                st.metric("Total Dealer", total_dl)
 
+                total_sl = filtered_df["Total servis"].sum()
+                st.metric("Total servis", total_sl)
+
+                total_slc = filtered_df["Service advisor"].nunique()
+                st.metric("Total Service Advisor", total_slc)
+                
+                total_mdl = filtered_df["Models"].nunique()
+                st.metric("Total Models", total_mdl)
+
+            kiri, tengah, kanan = st.columns(3)
+            with kiri:
                 total4 = filtered_df.groupby('Series')['Total servis'].sum().reset_index()
                 labels4 = total4['Series']
                 values4 = total4['Total servis']
@@ -399,20 +405,6 @@ if st.session_state.df_combined is not None:
                 fig_servis2.update_layout(title={'text':'Persentase Series vs Servis'}, height=346
                                        )
                 st.plotly_chart(fig_servis2)
-
-            kiri, tengah, kanan = st.columns(3)
-            # with kiri:
-            #     fig = px.bar(filtered_df, x="Total servis", y="Service advisor", title="Service advisor vs Market Activity",
-            #                 color_discrete_sequence=["#0083B8"]*len("Total servis"), orientation="h",
-            #                 template="plotly_white",)
-            #     fig.update_layout(
-            #         plot_bgcolor="rgba(0,0,0,0)",
-            #         font=dict(color="black"),
-            #         yaxis=dict(showgrid=True, gridcolor='#cecdcd'),  # Show y-axis grid and set its color  
-            #         paper_bgcolor='rgba(0, 0, 0, 0)',  # Set paper background color to transparent
-            #         xaxis=dict(showgrid=True, gridcolor='#cecdcd'), # Show x-axis grid and set its color
-            #         )
-            #     st.plotly_chart(fig)
 
             with tengah:
                 top5 = filtered_df.groupby('Service advisor')['Total servis'].sum().reset_index()
