@@ -404,7 +404,7 @@ if st.session_state.df_combined is not None:
                 
                 # Use `hole` to create a donut-like pie chart
                 fig_servis2 = go.Figure(data=[go.Pie(labels=labels4, values=values4, hole=.3)])
-                fig_servis2.update_layout(title={'text':'Persentase Series vs Servis'}
+                fig_servis2.update_layout(title={'text':'Persentase Series vs Servis','x':0.5, 'xanchor':'center', 'yanchor':'top'}
                                        )
                 st.plotly_chart(fig_servis2)
 
@@ -415,7 +415,7 @@ if st.session_state.df_combined is not None:
                 fig2 = px.bar(top5, x="Service advisor", y="Total servis", title="Top 5 Service Advisor", text_auto=True)
                 fig2.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
                 fig2.update_layout(
-                        xaxis={'categoryorder':'total descending'}
+                        xaxis={'categoryorder':'total descending'}, title={'x':0.5, 'xanchor':'center', 'yanchor':'top'}
                     )
                 st.plotly_chart(fig2)
 
