@@ -73,7 +73,7 @@ if st.session_state.df_combined is not None:
 
         # Pilih K terbaik
         optimal_k = k_range[np.argmax(wcss)]
-        st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}')
+        st.write(f'Nilai K terbaik berdasarkan Elbow Method adalah K = {optimal_k}')
         
     # # K-means clustering
     # kmeans = KMeans(n_clusters=optimal_k, random_state=42)
