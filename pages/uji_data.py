@@ -73,7 +73,7 @@ if st.session_state.df_combined is not None:
 
         # Pilih K terbaik
         optimal_k = k_range[np.argmax(silhouette_scores)]
-        optimal_nilai = silhouette_scores.max()
+        optimal_nilai = k_scores_df['Silhouette Score'].max()
         st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}, dengan nilai {optimal_nilai}')
         
     # # K-means clustering
