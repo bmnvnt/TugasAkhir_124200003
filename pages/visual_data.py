@@ -386,11 +386,11 @@ if st.session_state.df_combined is not None:
                 total_dl = filtered_df["Dealer name"].nunique()
                 st.metric("Total Dealer", total_dl)
 
-                total_sl = filtered_df["Total servis"].sum()
-                st.metric("Total servis", total_sl)
+                total_sr = filtered_df["Total servis"].sum()
+                st.metric("Total servis", total_sr)
 
-                total_slc = filtered_df["Service advisor"].nunique()
-                st.metric("Total Service Advisor", total_slc)
+                total_src = filtered_df["Service advisor"].nunique()
+                st.metric("Total Service Advisor", total_src)
                 
                 total_mdl = filtered_df["Models"].nunique()
                 st.metric("Total Models", total_mdl)
