@@ -350,12 +350,27 @@ if st.session_state.df_combined is not None:
                 top5 = filtered_df.groupby('Colour')['Total penjualan'].sum().reset_index()
                 top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
 
-                fig2 = px.bar(top5, x="Colour", y="Total penjualan", title="Posisi 5 Teratas Sales Consultant", text_auto=True)
+                fig2 = px.bar(top5, x="Colour", y="Total penjualan", title="Posisi 5 Warna Mobil", text_auto=True)
                 fig2.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
                 fig2.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                         xaxis={'categoryorder':'total descending'}
                     )
                 st.plotly_chart(fig2)
+
+            with kanan_bawah:
+                total4 = filtered_df.groupby('Payment method')['Total penjualan'].sum().reset_index()
+                labels = total4['Payment method']
+                values = total4['Total penjualan']
+                
+                # Use `hole` to create a donut-like pie chart
+                fig_sales4 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3, 
+                                                    textfont_size=16, 
+                                                    # marker=dict(pattern=dict(shape=["x", "+", "-"]))
+                                                    )])
+                fig_sales4.update_layout(title={'text':'Persentase Promotion yang digunakan', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                                         uniformtext_minsize=12, uniformtext_mode='hide'
+                                       )
+                st.plotly_chart(fig_sales4)
 
 
         with servis:
