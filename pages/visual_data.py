@@ -376,7 +376,8 @@ if st.session_state.df_combined is not None:
                             y="Total servis",
                             markers=True,
                             # color = "Cluster"
-                            title="Total servis bulanan"
+                            title="Total servis bulanan",
+                            height=398
                         )
                 st.plotly_chart(fig_servis3)
 
