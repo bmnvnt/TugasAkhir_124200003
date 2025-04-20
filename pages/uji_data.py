@@ -72,7 +72,7 @@ if st.session_state.df_combined is not None:
         st.pyplot(fig1)
 
         # Pilih K terbaik
-        optimal_k = k_range[np.argmax(silhouette_scores)]
+        optimal_k = k_range[np.argmax(wcss)]
         st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}')
         
     # # K-means clustering
