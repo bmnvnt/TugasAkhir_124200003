@@ -346,6 +346,17 @@ if st.session_state.df_combined is not None:
                                        )
                 st.plotly_chart(fig_sales2)
 
+            with tengah_bawah:
+                top5 = filtered_df.groupby('Colour')['Total penjualan'].sum().reset_index()
+                top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
+
+                fig2 = px.bar(top5, x="Colour", y="Total penjualan", title="Posisi 5 Teratas Sales Consultant", text_auto=True)
+                fig2.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                fig2.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                        xaxis={'categoryorder':'total descending'}
+                    )
+                st.plotly_chart(fig2)
+
 
         with servis:
             prov_filter2 = st.multiselect("Pilih provinsi", options=finalservis['Provinces'].unique(), default=None, key="prov")
