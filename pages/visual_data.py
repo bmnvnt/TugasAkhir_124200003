@@ -387,6 +387,7 @@ if st.session_state.df_combined is not None:
                 st.metric("Total Dealer", total_dl)
 
                 total_sr = filtered_df["Total servis"].sum()
+                total_sr = f"{total_sr:,.0f}"
                 st.metric("Total servis", total_sr)
 
                 total_src = filtered_df["Service advisor"].nunique()
