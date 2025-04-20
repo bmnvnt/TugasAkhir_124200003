@@ -11,7 +11,7 @@ from streamlit_elements import elements, mui, html, dashboard, nivo
 
 
 st.html('style.html')
-st.title("Visualisasi Data")
+st.title("Visualisasi Datas")
 
 tab1,tab2 = st.tabs(["Klastering","Analisa Data"])
 if st.session_state.df_combined is not None:
