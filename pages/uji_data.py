@@ -38,24 +38,6 @@ if st.session_state.df_combined is not None:
     silhouette_scores = []
         
     with tab2:
-        for k in k_range:
-            kmeans = KMeans(n_clusters=k, random_state=42)
-            kmeans.fit(data_standardized)
-            silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
-            
-            # Tabel hasil silhouette score untuk k=2 sampai k=10
-        k_scores_df = pd.DataFrame({
-            'K': k_range,
-            'Silhouette Score': silhouette_scores
-        })
-        st.subheader('Silhouette Score untuk Nilai K (2-10)')
-        st.dataframe(k_scores_df)
-
-        # Pilih K terbaik
-        optimal_k = k_range[np.argmax(silhouette_scores)]
-        st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}')
-        
-    with tab3:
         wcss = []
         for  k  in np.arange(1, 10+1):
             kmeans = KMeans(n_clusters = k , random_state=5)
@@ -74,6 +56,24 @@ if st.session_state.df_combined is not None:
         # Pilih K terbaik
         optimal_k = k_range[np.argmax(wcss)]
         st.write(f'Nilai K terbaik berdasarkan Elbow Method adalah K = {optimal_k}')
+        
+    with tab3:
+        for k in k_range:
+            kmeans = KMeans(n_clusters=k, random_state=42)
+            kmeans.fit(data_standardized)
+            silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
+            
+            # Tabel hasil silhouette score untuk k=2 sampai k=10
+        k_scores_df = pd.DataFrame({
+            'K': k_range,
+            'Silhouette Score': silhouette_scores
+        })
+        st.subheader('Silhouette Score untuk Nilai K (2-10)')
+        st.dataframe(k_scores_df)
+
+        # Pilih K terbaik
+        optimal_k = k_range[np.argmax(silhouette_scores)]
+        st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}')
         
     # # K-means clustering
     # kmeans = KMeans(n_clusters=optimal_k, random_state=42)
