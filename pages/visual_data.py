@@ -219,11 +219,11 @@ if st.session_state.df_combined is not None:
         total1,total2,total3,total4,total5=st.columns(5,gap='small')
         with total1:
             st.info('Sales Activity',icon="💲")
-            st.metric(label="Total Penjualan",value=10000)
+            st.metric(label="Total Penjualan",value=formatted_number1)
 
         with total2:
             st.info('Service Activity',icon="🔧")
-            st.metric(label="Total Servis",value=10000)
+            st.metric(label="Total Servis",value=formatted_number2)
 
         with total3:
             st.info('Dealer',icon="🏠")
