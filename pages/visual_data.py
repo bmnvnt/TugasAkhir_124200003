@@ -379,6 +379,7 @@ if st.session_state.df_combined is not None:
                             title="Total servis bulanan",
                             height=398
                         )
+                fig_servis3.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'})
                 st.plotly_chart(fig_servis3)
 
             with r:
