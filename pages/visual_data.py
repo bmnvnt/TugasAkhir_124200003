@@ -453,7 +453,7 @@ if st.session_state.df_combined is not None:
                 
                 # Use `hole` to create a donut-like pie chart
                 fig_sales2 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3)])
-                fig_sales2.update_layout(title={'text':'Persentase Model yang maintenance'}
+                fig_sales2.update_layout(title={'text':'Persentase Model yang servis'}
                                        )
                 st.plotly_chart(fig_sales2)
 
