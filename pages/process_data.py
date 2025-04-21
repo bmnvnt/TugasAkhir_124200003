@@ -70,7 +70,7 @@ with pro2:
 with pro3:
     if st.session_state['dataset1'] is not None:
         st.subheader("Merging Data")
-        st.markdown("Dilakukan agregasi data penjualan berdasarkan provinsi:")
+        st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
         dl1 = st.session_state['dealer1']
         filter1 = df1[~df1['Dealer name'].isin(dl1['Dealer name'])]
         df_penjualan1 = pd.merge(df1, dl1, on='Dealer name')
@@ -84,7 +84,7 @@ with pro3:
         st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
 
     if st.session_state['dataset2'] is not None:
-        st.markdown("Dilakukan agregasi data servis berdasarkan provinsi:")
+        st.markdown("Dilakukan penggabungan data servis dengan data lokasi dealer:")
         dl2 = st.session_state['dealer2']
         filter2 = df2[~df2['Dealer name'].isin(dl2['Dealer name'])] 
         df_servis1 = pd.merge(df2, dl2, on='Dealer name')
@@ -101,7 +101,7 @@ with pro3:
 with pro4:
     if st.session_state['dataset1'] is not None:
         st.subheader("Summary Data")
-        st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
+        st.markdown("Dilakukan agregasi data penjualan berdasarkan provinsi:")
         group1 = df_penjualan1.groupby(df_penjualan1['Provinces'])['Total penjualan'].sum().reset_index()
 
         st.dataframe(group1)
@@ -109,7 +109,7 @@ with pro4:
         st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
 
     if st.session_state['dataset2'] is not None:
-        st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
+        st.markdown("Dilakukan agregasi data servis berdasarkan provinsi:")
         group2 = df_servis1.groupby(df_servis1['Provinces'])['Total servis'].sum().reset_index()
 
         st.dataframe(group2)
