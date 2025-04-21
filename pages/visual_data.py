@@ -24,7 +24,7 @@ if st.session_state.df_combined is not None:
 
         # Membuat peta menggunakan Folium
         st.header("Peta Klastering Market Coverage Area Wuling di Indonesia")
-        k_slider = st.slider('Set the number of clusters', 2, 10, value=3)
+        k_slider = st.slider('Pillih jumlah klaster', 2, 10, value=3)
 
         jumlah_data1 = len(st.session_state['df_penjualan1'])
         formatted_number1 = f"{jumlah_data1:,.0f}"
