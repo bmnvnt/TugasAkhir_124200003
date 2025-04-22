@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import geopandas as gpd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -8,6 +9,8 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
 from sklearn.cluster import KMeans
 from streamlit_elements import elements, mui, html, dashboard, nivo
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 st.html('style.html')
@@ -43,9 +46,13 @@ if st.session_state.df_combined is not None:
         data_cleansed = st.session_state.df_combined.copy()  # Salin data_cleansed yang sudah dibersihkan
         data_cleansed['Cluster'] = clusters +1  # Menambahkan hasil clustering sebagai kolom Cluster
 
+        # grouped_km = pd.DataFrame(data_cleansed.select_dtypes(include=[np.number]))
+        # grouped_km = grouped_km.groupby(['Cluster']).mean().round(0)
+        # st.write(grouped_km.select_dtypes(include=[np.number]))
+
         finalpenjualan = pd.merge(st.session_state['df_penjualan1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
         finalservis = pd.merge(st.session_state['df_servis1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
-        gdf = gdf.merge(data_cleansed[['Provinces', 'Cluster']], how='left', left_on='name', right_on='Provinces')
+        gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis', 'Cluster']], how='left', left_on='name', right_on='Provinces')
 
         # Membuat dua kolom untuk peta dan agregasi data
         left_map, right_summary = st.columns([2, 0.65])
@@ -61,7 +68,7 @@ if st.session_state.df_combined is not None:
             # Menyimpan peta ke file HTML
             map_indonesia.save('map_without_watermark.html')    
 
-            unique_clusters = gdf['Cluster'].unique()
+            # unique_clusters = gdf['Cluster'].unique()
             cluster_colors = {1: 'red',
                               2: 'green',
                               3: 'yellow',
@@ -73,6 +80,14 @@ if st.session_state.df_combined is not None:
                               9: 'grey', 
                               10:'yellow',  
             }
+
+            popup = folium.GeoJsonPopup(
+                    fields=["Provinces", "Total penjualan", "Total servis", "Cluster"],
+                    aliases=["Provinsi", "Total Penjualan", "Total Servis", "Cluster"],
+                    localize=True,
+                    labels=True,
+                    # style="background-color: yellow;",
+                )
             # Menambahkan layer GeoJSON ke peta
             folium.GeoJson(
                     gdf,
@@ -88,7 +103,8 @@ if st.session_state.df_combined is not None:
                         'color': 'black',
                         'weight': 1,
                         'fillOpacity': 0.6
-                    }
+                    },
+                    popup=popup
                 ).add_to(map_indonesia)
 
             folium.GeoJson(gdf,show=False, name="Batas Wilayah", zoom_on_click=True,
@@ -98,23 +114,32 @@ if st.session_state.df_combined is not None:
                 ),
             }).add_to(map_indonesia)
 
-            # Menambahkan marker menggunakan MarkerCluster
-            marker_cluster = MarkerCluster(name="Titik Wilayah", show=True).add_to(map_indonesia)
-            # fg = folium.FeatureGroup(name="Titik Wilayah", show=False).add_to(map_indonesia)
+            # #Menambahkan marker menggunakan MarkerCluster
+            # marker_cluster = MarkerCluster(name="Titik Wilayah", show=True).add_to(map_indonesia)
 
-            # Menambahkan marker untuk setiap kabupaten/kota dalam GeoDataFrame
-            for idx, row in gdf.iterrows():
-                centroid = row['geometry'].centroid
-                prov = row['name']  # Asumsikan ada kolom 'name' yang berisi nama provinsi
-                cl = row['Cluster']
-                # Membuat popup yang berisi nama provinsi
-                popup_text = f"{prov} <br> Cluster {cl}"
+            # # Menambahkan marker untuk setiap kabupaten/kota dalam GeoDataFrame
+            # for idx, row in gdf.iterrows():
+            #     centroid = row['geometry'].centroid
+            #     prov = row['name']  # Asumsikan ada kolom 'name' yang berisi nama provinsi
+            #     cl = row['Cluster']
+            #     sl = row['Total penjualan']
+            #     sr = row['Total servis']
+                
+            #     # Membuat popup yang berisi nama provinsi
+            #     # popup_text = f"Provinsi : {prov} <br> Total Penjualan : {sl} <br> Cluster:  {cl}"
+            #     popup = folium.GeoJsonPopup(
+            #         fields=["Provinces", "Total penjualan"],
+            #         aliases=["Provinsi", "Total Penjualan"],
+            #         localize=True,
+            #         labels=True,
+            #         style="background-color: yellow;",
+            #     )
 
-                folium.Marker(
-                    location=[centroid.y, centroid.x],  # Lokasi marker menggunakan centroid
-                    popup=popup_text,
-                    icon=folium.Icon(color='blue')  # Warna default blue
-                ).add_to(marker_cluster) #marker_cluster
+            #     folium.Marker(
+            #         location=[centroid.y, centroid.x],  # Lokasi marker menggunakan centroid
+            #         popup=popup,
+            #         icon=folium.Icon(color='blue')  # Warna default blue
+            #     ).add_to(marker_cluster) #marker_cluster
                 
             folium.LayerControl().add_to(map_indonesia)
 
@@ -129,17 +154,17 @@ if st.session_state.df_combined is not None:
             # l, r = st.columns(2)
             st.html('<span class="high_indicator"></span>')
             # with l:
+            prov = len(data_cleansed['Provinces'])
+            totalprov = f"{prov:,.0f}"
+            st.metric("Provinsi", totalprov)
             st.metric("Total Penjualan", formatted_number1)
             st.metric("Total Service", formatted_number2)
-
-            # with r:
             st.metric("Target Penjualan Tahunan", formatted_number1 + "/24000")
-            # st.metric("Total Pelanggan", jumlahpelanggan)
+            
 
         # Tampilkan informasi tentang data
-        prov = len(data_cleansed['Provinces'])
-        totalprov = f"{prov:,.0f}"
-        st.write(f"Pemetaan ditampilkan dengan {totalprov} provinsi.")
+        
+        
         # DataFrame display
         with st.expander('Lihat Data JSON (GeoData)'):
             st.write("Data GeoJSON yang dimuat:", gdf)
@@ -155,6 +180,7 @@ if st.session_state.df_combined is not None:
 
         for i in range(k_slider):
             with tabs[i]:
+                cluster_penjualan = finalpenjualan[finalpenjualan['Cluster'] == i+1]
                 cluster_data = data_cleansed[data_cleansed['Cluster'] == i+1]
                 st.write(f"### Cluster {i+1}:")
                 st.subheader('Analisis Berdasarkan Cluster')
@@ -172,25 +198,26 @@ if st.session_state.df_combined is not None:
                     
                 kiri, tengah, kanan = st.columns(3)
                 with kiri:
-                    fig = px.bar(cluster_data, x="Total penjualan", y="Provinces", title="Provinces vs Market Activity",
-                                color_discrete_sequence=["#0083B8"]*len("Total penjualan"), orientation="h",
-                                template="plotly_white")
-                    fig.update_layout(
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color="black"),
-                    # yaxis=dict(showgrid=True, gridcolor='#cecdcd'),  # Show y-axis grid and set its color  
-                    paper_bgcolor='rgba(0, 0, 0, 0)',  # Set paper background color to transparent
-                    # xaxis=dict(showgrid=True, gridcolor='#cecdcd'), # Show x-axis grid and set its color
-                    )
-                    st.plotly_chart(fig)
+                    top5 = cluster_penjualan.groupby('Series')['Total penjualan'].sum().reset_index()
+                    top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
+
+                    fig_cl_kiri = px.bar(top5, x="Series", y="Total penjualan", title="Posisi 5 Teratas Series Terlaris", text_auto=True, color='Series')
+                    fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                    fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                            xaxis={'categoryorder':'total descending'}
+                        )
+                    st.plotly_chart(fig_cl_kiri)
 
                 with tengah:
-                    fig2 = px.bar(cluster_data, x="Provinces", y=["Total penjualan", "Total servis"], title="Provinces vs Market Activity", text_auto=True, template="plotly_white")
-                    fig2.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
-                    fig2.update_layout(
-                        xaxis={'categoryorder':'total descending'}
-                    )
-                    st.plotly_chart(fig2)
+                    top5 = cluster_penjualan.groupby('Models')['Total penjualan'].sum().reset_index()
+                    top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
+                    
+                    fig_cl_tengah = px.bar(top5, x="Models", y="Total penjualan", title="Posisi 5 Teratas Model Terlaris", text_auto=True)
+                    fig_cl_tengah.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                    fig_cl_tengah.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                            xaxis={'categoryorder':'total descending'}
+                        )
+                    st.plotly_chart(fig_cl_tengah)
 
                 with kanan:
                     labels = cluster_data['Provinces']
@@ -208,11 +235,12 @@ if st.session_state.df_combined is not None:
                 
 
         # Visualisasi hasil clustering (scatter plot)
-        # st.subheader('Visualisasi Hasil Clustering')
-        # fig, ax = plt.subplots(figsize=(8, 6))
-        # sns.scatterplot(x=data_cleansed.iloc[:, 0], y=data_cleansed.iloc[:, 1], hue=data_cleansed['Cluster'], palette='tab10', ax=ax)
-        # ax.set_title('Visualisasi Hasil Clustering')
-        # st.pyplot(fig)
+        with st.expander('Grafik Scatter Plot Klaster'):
+            st.subheader('Visualisasi Hasil Clustering')
+            fig, ax = plt.subplots(figsize=(14, 6))
+            sns.scatterplot(x=data_cleansed.iloc[:, 1], y=data_cleansed.iloc[:, 2], hue=data_cleansed['Cluster'], palette='tab10', ax=ax)
+            ax.set_title('Visualisasi Hasil Clustering')
+            st.pyplot(fig)
 
     with tab2:
 
@@ -226,8 +254,8 @@ if st.session_state.df_combined is not None:
             st.metric(label="Total Servis",value=formatted_number2)
 
         with total3:
-            st.info('Dealer',icon="🏠")
-            st.metric(label="Average TZS",value=10000)
+            st.info('Wilayah',icon="🏠")
+            st.metric(label="Total Provinsi",value=totalprov)
 
         with total4:
             st.info('Central Earnings',icon="💰")
@@ -286,6 +314,7 @@ if st.session_state.df_combined is not None:
                 st.metric("Total Dealer", total_dl)
 
                 total_sl = filtered_df["Total penjualan"].sum()
+                total_sl = f"{total_sl:,.0f}"
                 st.metric("Total Penjualan", total_sl)
 
                 total_slc = filtered_df["sales consultant"].nunique()

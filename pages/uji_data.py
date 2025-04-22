@@ -33,17 +33,19 @@ if st.session_state.df_combined is not None:
 
         data_standardized = st.session_state.data_standardized
         
-        # Menentukan nilai k terbaik dengan silhouette score
-    k_range = range(2, 11)
-    silhouette_scores = []
-        
     with tab2:
         wcss = []
         for  k  in np.arange(1, 10+1):
-            kmeans = KMeans(n_clusters = k , random_state=5)
+            kmeans = KMeans(n_clusters = k , random_state=42)
             kmeans.fit(data_standardized)
             wcss.append( kmeans.inertia_ )   
                             
+        k_scores_df = pd.DataFrame({
+            'K': np.arange(1, 10+1),
+            'Elbow Method': wcss
+        })
+        # st.subheader('Elbow Method untuk Nilai K (2-10)')
+        # st.dataframe(k_scores_df)
                 # 6. elobw method 를 이용해서, 차트로 보여준다.
         fig1 = plt.figure(figsize=(14,6))
         x = np.arange(1, 10+1)
@@ -54,10 +56,14 @@ if st.session_state.df_combined is not None:
         st.pyplot(fig1)
 
         # Pilih K terbaik
-        optimal_k = k_range[np.argmax(wcss)]
+        k_ranges = range(2, 11)
+        optimal_k = k_ranges[np.argmax(wcss)]
         st.write(f'Nilai K terbaik berdasarkan Elbow Method adalah K = {optimal_k}')
         
     with tab3:
+        # Menentukan nilai k terbaik dengan silhouette score
+        k_range = range(2, 11)
+        silhouette_scores = []
         for k in k_range:
             kmeans = KMeans(n_clusters=k, random_state=42)
             kmeans.fit(data_standardized)
@@ -68,8 +74,17 @@ if st.session_state.df_combined is not None:
             'K': k_range,
             'Silhouette Score': silhouette_scores
         })
+
         st.subheader('Silhouette Score untuk Nilai K (2-10)')
         st.dataframe(k_scores_df)
+
+        fig1 = plt.figure(figsize=(14,6))
+        x = k_range
+        plt.plot(x, silhouette_scores)
+        plt.title('Silhouette Scores')
+        plt.xlabel('Number of clusters')
+        plt.ylabel('Silhouette Scores')
+        st.pyplot(fig1)
 
         # Pilih K terbaik
         optimal_k = k_range[np.argmax(silhouette_scores)]
