@@ -3,7 +3,7 @@ import pandas as pd
 
 st.title("Pengolahan Data")
 
-pro1,pro2,pro3,pro4 = st.tabs(["Raw Data","Cleansing Data", "Merging Data", "Result"])
+pro1,pro2,pro3,pro4 = st.tabs(["Raw Data","Cleansing Data", "Merging Data", "Aggregation Data"])
 st.session_state.df_combined = None
 
 #RAW DATA

@@ -6,6 +6,8 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
 import seaborn as sns
+from yellowbrick.cluster import KElbowVisualizer
+from yellowbrick.cluster.elbow import kelbow_visualizer
 
 st.title("Pemodelan Data")
 tab1, tab2, tab3 = st.tabs(["Standarization", "Elbow Method", "Silhoutte Score"])
@@ -21,7 +23,7 @@ if st.session_state.df_combined is not None:
                 
         st.subheader('Scatter Plot Sebelum dan Sesudah Standarisasi')
                 
-        fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+        figu, axes = plt.subplots(1, 2, figsize=(14, 6))
                 
         sns.scatterplot(x=st.session_state.df_combined.iloc[:, 0], y=st.session_state.df_combined.iloc[:, 1], ax=axes[0])
         axes[0].set_title('Sebelum Standarisasi')
@@ -29,94 +31,54 @@ if st.session_state.df_combined is not None:
         sns.scatterplot(x=data_standardized.iloc[:, 0], y=data_standardized.iloc[:, 1], ax=axes[1])
         axes[1].set_title('Setelah Standarisasi')
                 
-        st.pyplot(fig)
+        st.pyplot(figu)
 
         data_standardized = st.session_state.data_standardized
         
     with tab2:
-        wcss = []
-        for  k  in np.arange(1, 10+1):
-            kmeans = KMeans(n_clusters = k , random_state=42)
-            kmeans.fit(data_standardized)
-            wcss.append( kmeans.inertia_ )   
-                            
-        k_scores_df = pd.DataFrame({
-            'K': np.arange(1, 10+1),
-            'Elbow Method': wcss
-        })
-        # st.subheader('Elbow Method untuk Nilai K (2-10)')
-        # st.dataframe(k_scores_df)
-                # 6. elobw method 를 이용해서, 차트로 보여준다.
-        fig1 = plt.figure(figsize=(14,6))
-        x = np.arange(1, 10+1)
-        plt.plot(x, wcss)
-        plt.title('Elbow method')
-        plt.xlabel('Number of clusters')
-        plt.ylabel('wcss')
-        st.pyplot(fig1)
+        fig, visualizer = plt.subplots()
+        visualizer = KElbowVisualizer(KMeans(), k=(1, 11), distance_metric='euclidean')  
+        visualizer.fit(data_standardized)
+        visualizer.poof()
+        visual = visualizer.ax.figure
+        fig.set_size_inches(14, 6)
+        st.pyplot(fig)
 
-        # Pilih K terbaik
-        k_ranges = range(2, 11)
-        optimal_k = k_ranges[np.argmax(wcss)]
-        st.write(f'Nilai K terbaik berdasarkan Elbow Method adalah K = {optimal_k}')
         
     with tab3:
-        # Menentukan nilai k terbaik dengan silhouette score
-        k_range = range(2, 11)
-        silhouette_scores = []
-        for k in k_range:
-            kmeans = KMeans(n_clusters=k, random_state=42)
-            kmeans.fit(data_standardized)
-            silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
+        fig, ax = plt.subplots()
+        ax = kelbow_visualizer(KMeans(random_state=4), data_standardized, k=(2,11), metric='silhouette', distance_metric='euclidean', timings=False)
+
+        fig.set_size_inches(14, 6)
+        st.pyplot(fig)
+        # # Menentukan nilai k terbaik dengan silhouette score
+        # k_range = range(2, 11)
+        # silhouette_scores = []
+        # for k in k_range:
+        #     kmeans = KMeans(n_clusters=k, random_state=42)
+        #     kmeans.fit(data_standardized)
+        #     silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
             
-            # Tabel hasil silhouette score untuk k=2 sampai k=10
-        k_scores_df = pd.DataFrame({
-            'K': k_range,
-            'Silhouette Score': silhouette_scores
-        })
+        #     # Tabel hasil silhouette score untuk k=2 sampai k=10
+        # k_scores_df = pd.DataFrame({
+        #     'K': k_range,
+        #     'Silhouette Score': silhouette_scores
+        # })
 
-        st.subheader('Silhouette Score untuk Nilai K (2-10)')
-        st.dataframe(k_scores_df)
+        # st.subheader('Silhouette Score untuk Nilai K (2-10)')
+        # st.dataframe(k_scores_df)
 
-        fig1 = plt.figure(figsize=(14,6))
-        x = k_range
-        plt.plot(x, silhouette_scores)
-        plt.title('Silhouette Scores')
-        plt.xlabel('Number of clusters')
-        plt.ylabel('Silhouette Scores')
-        st.pyplot(fig1)
+        # fig1 = plt.figure(figsize=(14,6))
+        # x = k_range
+        # plt.plot(x, silhouette_scores)
+        # plt.title('Silhouette Scores')
+        # plt.xlabel('Number of clusters')
+        # plt.ylabel('Silhouette Scores')
+        # st.pyplot(fig1)
 
-        # Pilih K terbaik
-        optimal_k = k_range[np.argmax(silhouette_scores)]
-        optimal_nilai = k_scores_df['Silhouette Score'].max()
-        st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}, dengan nilai {optimal_nilai}')
-        
-    # # K-means clustering
-    # kmeans = KMeans(n_clusters=optimal_k, random_state=42)
-    # kmeans.fit(data_standardized)
-        
-    # # Menampilkan cluster
-    # clusters = pd.DataFrame(kmeans.labels_, columns=['Cluster'])
-        
-    # # Pastikan data_cleansed tersedia dan memiliki kolom Cluster
-    # data_cleansed = st.session_state.df_combined.copy()  # Salin data_cleansed yang sudah dibersihkan
-    # data_cleansed['Cluster'] = clusters  # Menambahkan hasil clustering sebagai kolom Cluster
-        
-    # Simpan hasil clustering ke session state
-    # st.session_state.data_cleansed = data_cleansed
-        
-    # st.subheader('Hasil K-means Clustering')
-    # st.dataframe(data_cleansed)
-        
-    # Evaluasi Silhouette Score
-    # silhouette_avg = silhouette_score(data_standardized, kmeans.labels_)
-    # st.subheader('Evaluasi Silhouette Score')
-    # st.write(f'Silhouette Score untuk K={optimal_k}: {silhouette_avg:.2f}')
-        
-    # Visualisasi hasil clustering
-    # st.subheader('Visualisasi Hasil Clustering')
-    # fig, ax = plt.subplots(figsize=(14, 6))
-    # sns.scatterplot(x=data_standardized.iloc[:, 0], y=data_standardized.iloc[:, 1], hue=clusters['Cluster'], palette='tab10', ax=ax)
-    # st.pyplot(fig)
+        # # Pilih K terbaik
+        # optimal_k = k_range[np.argmax(silhouette_scores)]
+        # optimal_nilai = k_scores_df['Silhouette Score'].max()
+        # st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}, dengan nilai {optimal_nilai}')
 else:
     st.error("Pengolahan data belum dilakukan. Harap lakukan pengolahan data terlebih dahulu.")

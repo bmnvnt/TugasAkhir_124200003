@@ -63,16 +63,13 @@ if st.session_state.df_combined is not None:
             folium.TileLayer(
             tiles='CartoDB positron',  # Pilih tile map yang tidak memiliki watermark
             attr='',
-            ).add_to(map_indonesia)
-
-            # Menyimpan peta ke file HTML
-            map_indonesia.save('map_without_watermark.html')    
+            ).add_to(map_indonesia)   
 
             # unique_clusters = gdf['Cluster'].unique()
-            cluster_colors = {1: 'red',
+            cluster_colors = {1: 'orange',
                               2: 'green',
                               3: 'yellow',
-                              4: 'orange',  
+                              4: 'red',  
                               5: 'blue', 
                               6: 'purple', 
                               7: 'brown',  
@@ -81,7 +78,7 @@ if st.session_state.df_combined is not None:
                               10:'yellow',  
             }
 
-            popup = folium.GeoJsonPopup(
+            popup = folium.GeoJsonTooltip(
                     fields=["Provinces", "Total penjualan", "Total servis", "Cluster"],
                     aliases=["Provinsi", "Total Penjualan", "Total Servis", "Cluster"],
                     localize=True,
@@ -95,16 +92,17 @@ if st.session_state.df_combined is not None:
                     zoom_on_click=True,
                     highlight_function=lambda feature: {
                 "fillColor": (
-                    "blue" if "e" in feature["properties"]["name"].lower() else "blue"
-                ),
+                    "white"
+                ), 'fillOpacity' : 0.2
             },
                     style_function=lambda feature: {
                         'fillColor': cluster_colors.get(feature['properties']['Cluster'], 'gray'),  # Warna dinamis berdasarkan cluster
                         'color': 'black',
                         'weight': 1,
-                        'fillOpacity': 0.6
+                        'fillOpacity': 0.8
                     },
-                    popup=popup
+                    tooltip=popup
+                    # popup=popup
                 ).add_to(map_indonesia)
 
             folium.GeoJson(gdf,show=False, name="Batas Wilayah", zoom_on_click=True,
@@ -113,6 +111,7 @@ if st.session_state.df_combined is not None:
                     "green" if "e" in feature["properties"]["name"].lower() else "#ffff00"
                 ),
             }).add_to(map_indonesia)
+            
 
             # #Menambahkan marker menggunakan MarkerCluster
             # marker_cluster = MarkerCluster(name="Titik Wilayah", show=True).add_to(map_indonesia)
@@ -143,8 +142,11 @@ if st.session_state.df_combined is not None:
                 
             folium.LayerControl().add_to(map_indonesia)
 
+            # Menyimpan peta ke file HTML
+            map_indonesia.save('map_without_watermark.html') 
+
             # Menampilkan peta di Streamlit
-            folium_static(map_indonesia, width=None, height=500)  # Ukuran peta
+            folium_static(map_indonesia, width=None, height=460)  # Ukuran peta
 
         with right_summary:
             # Menampilkan agregasi data atau metrik di sebelah kanan
@@ -181,55 +183,78 @@ if st.session_state.df_combined is not None:
         for i in range(k_slider):
             with tabs[i]:
                 cluster_penjualan = finalpenjualan[finalpenjualan['Cluster'] == i+1]
+                cluster_servis = finalservis[finalservis['Cluster'] == i+1]
                 cluster_data = data_cleansed[data_cleansed['Cluster'] == i+1]
                 st.write(f"### Cluster {i+1}:")
                 st.subheader('Analisis Berdasarkan Cluster')
-                if i == 0:
-                    st.write(f"Cluster {i+1} - Cluster Rendah: Cluster ini memiliki jumlah data terendah.")
-                elif i == 1:
-                    st.write(f"Cluster {i+1} - Cluster Tinggi: Cluster ini memiliki jumlah data tertinggi.")
-                elif i == 2:
-                    st.write(f"Cluster {i+1} - Cluster Sedang: Cluster ini memiliki jumlah data sedang.")
-                else:
-                    st.write(f"Cluster {i+1} - Cluster Tinggi: Cluster ini memiliki jumlah data tertinggi.")
+                min_sales = cluster_data['Total penjualan'].min()
+                max_sales = cluster_data['Total penjualan'].max()
+                min_servis = cluster_data['Total servis'].min()
+                max_servis = cluster_data['Total servis'].max()
+
+                min_sales = f"{min_sales:,.0f}"
+                max_sales = f"{max_sales:,.0f}"
+                min_servis = f"{min_servis:,.0f}"
+                max_servis = f"{max_servis:,.0f}"
+                
+                st.write(f"Cluster {i+1} : Cluster ini merupakan cluster dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
 
                 with st.expander('Lihat Data per kluster'):
                     st.write("", cluster_data)
                     
-                kiri, tengah, kanan = st.columns(3)
+                kiri, kanan = st.columns(2)
                 with kiri:
-                    top5 = cluster_penjualan.groupby('Series')['Total penjualan'].sum().reset_index()
-                    top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
+                    top5 = cluster_penjualan.groupby('Provinces')['Total penjualan'].sum().reset_index()
+                    top5 = top5.sort_values(by='Total penjualan', ascending=False).head(10)
 
-                    fig_cl_kiri = px.bar(top5, x="Series", y="Total penjualan", title="Posisi 5 Teratas Series Terlaris", text_auto=True, color='Series')
+                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total penjualan", title="Top 5 Series Terlaris", text_auto=True)
                     fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
                     fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
-                            xaxis={'categoryorder':'total descending'}
+                            xaxis={'categoryorder':'total descending'}, showlegend=False
                         )
                     st.plotly_chart(fig_cl_kiri)
 
-                with tengah:
+                with kanan:
                     top5 = cluster_penjualan.groupby('Models')['Total penjualan'].sum().reset_index()
                     top5 = top5.sort_values(by='Total penjualan', ascending=False).head(5)
-                    
-                    fig_cl_tengah = px.bar(top5, x="Models", y="Total penjualan", title="Posisi 5 Teratas Model Terlaris", text_auto=True)
-                    fig_cl_tengah.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
-                    fig_cl_tengah.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
-                            xaxis={'categoryorder':'total descending'}
-                        )
-                    st.plotly_chart(fig_cl_tengah)
+                    tes = finalpenjualan.groupby('Models')['Series'].unique().reset_index()
+                    tes['Series'] = tes['Series'].astype('str')
 
-                with kanan:
-                    labels = cluster_data['Provinces']
-                    values = cluster_data["Total penjualan"]
-                    # cluster_data.loc[values < 2.e6, labels] = 'Other' # Represent only large provinces
-                    fig3 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.2)])
-                    fig3.update_layout(legend_y=0.9,
-                                       title={'text':f'Persentase Penjualan per Provinsi di Cluster {i+1}'}
-                                       )
-                    # fig3.update_traces(textinfo='percent+label', textposition='inside')
-                    st.plotly_chart(fig3, use_container_width=True)
-                
+                    top5 = top5.merge(tes[['Models','Series']], how='left', on='Models')
+                    # st.write(top5)
+                    fig_cl_kanan = px.bar(top5, x="Models", y="Total penjualan", title="Top 5 Model Terlaris", text_auto=True, color='Series')
+                    fig_cl_kanan.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                    fig_cl_kanan.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                            xaxis={'categoryorder':'total descending'}, showlegend=False
+                        )
+                    st.plotly_chart(fig_cl_kanan)
+
+                kiri2, kanan2 = st.columns(2)
+                with kiri2:
+                    top5 = cluster_servis.groupby('Provinces')['Total servis'].sum().reset_index()
+                    top5 = top5.sort_values(by='Total servis', ascending=False).head(10)
+
+                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total servis", title="Top 5 Series Servis", text_auto=True)
+                    fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                    fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                            xaxis={'categoryorder':'total descending'}, showlegend=False
+                        )
+                    st.plotly_chart(fig_cl_kiri)
+
+                with kanan2:
+                    top5 = cluster_servis.groupby('Models')['Total servis'].sum().reset_index()
+                    top5 = top5.sort_values(by='Total servis', ascending=False).head(5)
+                    tes = finalservis.groupby('Models')['Series'].unique().reset_index()
+                    tes['Series'] = tes['Series'].astype('str')
+
+                    top5 = top5.merge(tes[['Models','Series']], how='left', on='Models')
+                    # st.write(top5)
+                    fig_cl_kanan = px.bar(top5, x="Models", y="Total servis", title="Top 5 Model Servis",  text_auto=True, color='Series')
+                    fig_cl_kanan.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+                    fig_cl_kanan.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                            xaxis={'categoryorder':'total descending'}, showlegend=False
+                        )
+                    st.plotly_chart(fig_cl_kanan)
             
                 
                 
