@@ -42,9 +42,8 @@ if st.session_state.df_combined is not None:
         # Menampilkan cluster
         clusters = pd.DataFrame(kmeans.labels_, columns=['Cluster'])
             
-        # Pastikan data_cleansed tersedia dan memiliki kolom Cluster
-        data_cleansed = st.session_state.df_combined.copy()  # Salin data_cleansed yang sudah dibersihkan
-        data_cleansed['Cluster'] = clusters +1  # Menambahkan hasil clustering sebagai kolom Cluster
+        data_cleansed = st.session_state.df_combined.copy()
+        data_cleansed['Cluster'] = clusters +1  
 
         # grouped_km = pd.DataFrame(data_cleansed.select_dtypes(include=[np.number]))
         # grouped_km = grouped_km.groupby(['Cluster']).mean().round(0)
@@ -92,8 +91,8 @@ if st.session_state.df_combined is not None:
                     zoom_on_click=True,
                     highlight_function=lambda feature: {
                 "fillColor": (
-                    "white"
-                ), 'fillOpacity' : 0.2
+                    "yellow"
+                ), 'fillOpacity' : 0.1
             },
                     style_function=lambda feature: {
                         'fillColor': cluster_colors.get(feature['properties']['Cluster'], 'gray'),  # Warna dinamis berdasarkan cluster

@@ -47,7 +47,7 @@ if st.session_state.df_combined is not None:
         
     with tab3:
         fig, ax = plt.subplots()
-        ax = kelbow_visualizer(KMeans(random_state=4), data_standardized, k=(2,11), metric='silhouette', distance_metric='euclidean', timings=False)
+        ax = kelbow_visualizer(KMeans(random_state=42), data_standardized, k=(2,11), metric='silhouette', timings=False)
 
         fig.set_size_inches(14, 6)
         st.pyplot(fig)
