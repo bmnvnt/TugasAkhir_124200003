@@ -46,9 +46,11 @@ pg = st.navigation(
     }
 )
 
-expander = st.sidebar.expander("What is this?")
+expander = st.sidebar.expander("Aplikasi apa ini?")
 expander.write(
-    """Aplikasi ini dibuat untuk membantu PT. SGMW Motor Indonesia dalam mengolah data Sales dan After Sales."""
+    """Aplikasi ini dibuat untuk membantu PT. SGMW Motor Indonesia dalam mengolah data Sales dan After Sales
+       dengan menggunakan machine learning untuk mengklasterisasi wilayah sekaligus menampilkannya ke dalam peta.
+       Serta menganalisa data penjualan dan purna jual yang hasilnya disajikan ke dalam grafik-grafik analisis."""
 )
 
 # --- RUN NAVIGATION ---

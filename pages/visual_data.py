@@ -187,7 +187,7 @@ if st.session_state.df_combined is not None:
                 cluster_servis = finalservis[finalservis['Cluster'] == i+1]
                 cluster_data = data_cleansed[data_cleansed['Cluster'] == i+1]
                 st.write(f"### Cluster {i+1}:")
-                st.subheader('Analisis Berdasarkan Cluster')
+                st.subheader('Karakteristik Cluster')
                 min_sales = cluster_data['Total penjualan'].min()
                 max_sales = cluster_data['Total penjualan'].max()
                 min_servis = cluster_data['Total servis'].min()
@@ -201,8 +201,8 @@ if st.session_state.df_combined is not None:
                 min_servis = f"{min_servis:,.0f}"
                 max_servis = f"{max_servis:,.0f}"
                 
-                st.write(f"Cluster {i+1} {color}: Cluster ini merupakan cluster dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
-
+                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
+                
                 with st.expander('Lihat Data per kluster'):
                     st.write("", cluster_data)
                     
@@ -487,10 +487,10 @@ if st.session_state.df_combined is not None:
                 st.plotly_chart(fig_servis2)
 
             with tengah:
-                top5 = filtered_df.groupby('Service advisor')['Total servis'].sum().reset_index()
-                top5 = top5.sort_values(by='Total servis', ascending=False).head(5)
+                top5 = filtered_df.groupby('Provinces')['Total servis'].sum().reset_index()
+                top5 = top5.sort_values(by='Total servis', ascending=False).head(10)
 
-                fig2 = px.bar(top5, x="Service advisor", y="Total servis", title="Top 5 Service Advisor", text_auto=True)
+                fig2 = px.bar(top5, x="Provinces", y="Total servis", title="Top 10 Provinsi vs Servis", text_auto=True)
                 fig2.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
                 fig2.update_layout(
                         xaxis={'categoryorder':'total descending'}, title={'x':0.5, 'xanchor':'center', 'yanchor':'top'}

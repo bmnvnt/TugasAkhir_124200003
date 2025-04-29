@@ -3,7 +3,7 @@ import pandas as pd
 
 st.title("Pengolahan Data")
 
-pro1,pro2,pro3,pro4 = st.tabs(["Raw Data","Cleansing Data", "Merging Data", "Aggregation Data"])
+pro1,pro2,pro3,pro4 = st.tabs(["Raw Data","Cleaning Data", "Merging Data", "Aggregation Data"])
 st.session_state.df_combined = None
 
 #RAW DATA
@@ -28,11 +28,11 @@ with pro1:
         st.error("Data purna jual belum diunggah. Harap unggah file terlebih dahulu.")
  
  
-#CLEANSING DATA
+#CLEANING DATA
 with pro2:
     if st.session_state['dataset1'] is not None:
-        st.subheader("Cleansing Data")
-        st.markdown("Dihapus kolom-kolom yang kosong dari data penjualan:")
+        st.subheader("Cleaning Data")
+        st.markdown("Dihapus kolom-kolom yang kosong dan tidak diperlukan dari data penjualan:")
         df1 = st.session_state['dataset1']
 
         df1 = df1.drop(['Provinces', 'Order number', 'Plate registration dealer code', 'Plate registration dealer name', 'Plate No.',
@@ -48,11 +48,11 @@ with pro2:
         st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
 
     if st.session_state['dataset2'] is not None:
-        st.markdown("Dihapus kolom-kolom yang kosong dari data purna jual:")
+        st.markdown("Dihapus kolom-kolom yang kosong dan tidak diperlukan dari data purna jual:")
         df2 = st.session_state['dataset2']
 
-        df2 = df2.drop(['Order No.', 'Settlement time','Plate No.','Order type','VIN','Order status','Customer Name',
-                    'customer address','Contact name','Contact mobile phone'], axis=1)
+        df2 = df2.drop(['Order No.', 'Settlement time','Plate No.','VIN','Customer Name',
+                    'customer address','Contact name','Contact mobile phone', 'Total Labour Amount', 'Total Sublet Amount', 'Total Parts Amount'], axis=1)
 
         df2['Total servis']=1
         # Ubah ke datetime format dari dd/mm/yyyy
