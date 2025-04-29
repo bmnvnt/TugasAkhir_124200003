@@ -27,7 +27,7 @@ if st.session_state.df_combined is not None:
 
         # Membuat peta menggunakan Folium
         st.header("Peta Klastering Market Coverage Area Wuling di Indonesia")
-        k_slider = st.slider('Pillih jumlah klaster', 2, 10, value=3)
+        k_slider = st.slider('Pillih jumlah klaster', 2, 10, value=2)
 
         jumlah_data1 = len(st.session_state['df_penjualan1'])
         formatted_number1 = f"{jumlah_data1:,.0f}"
@@ -76,6 +76,8 @@ if st.session_state.df_combined is not None:
                               9: 'grey', 
                               10:'yellow',  
             }
+
+            st.session_state['cluster_colors'] = cluster_colors
 
             popup = folium.GeoJsonTooltip(
                     fields=["Provinces", "Total penjualan", "Total servis", "Cluster"],
@@ -191,12 +193,15 @@ if st.session_state.df_combined is not None:
                 min_servis = cluster_data['Total servis'].min()
                 max_servis = cluster_data['Total servis'].max()
 
+                cl_number = i+1
+                color = st.session_state['cluster_colors'].get(cl_number, "Color not found")
+
                 min_sales = f"{min_sales:,.0f}"
                 max_sales = f"{max_sales:,.0f}"
                 min_servis = f"{min_servis:,.0f}"
                 max_servis = f"{max_servis:,.0f}"
                 
-                st.write(f"Cluster {i+1} : Cluster ini merupakan cluster dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
+                st.write(f"Cluster {i+1} {color}: Cluster ini merupakan cluster dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
 
                 with st.expander('Lihat Data per kluster'):
                     st.write("", cluster_data)
@@ -206,7 +211,7 @@ if st.session_state.df_combined is not None:
                     top5 = cluster_penjualan.groupby('Provinces')['Total penjualan'].sum().reset_index()
                     top5 = top5.sort_values(by='Total penjualan', ascending=False).head(10)
 
-                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total penjualan", title="Top 5 Series Terlaris", text_auto=True)
+                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total penjualan", title="Top 10 Provinsi vs Sales", text_auto=True)
                     fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
                     fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                             xaxis={'categoryorder':'total descending'}, showlegend=False
@@ -233,7 +238,7 @@ if st.session_state.df_combined is not None:
                     top5 = cluster_servis.groupby('Provinces')['Total servis'].sum().reset_index()
                     top5 = top5.sort_values(by='Total servis', ascending=False).head(10)
 
-                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total servis", title="Top 5 Series Servis", text_auto=True)
+                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total servis", title="Top 10 Provinsi vs Servis", text_auto=True)
                     fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
                     fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                             xaxis={'categoryorder':'total descending'}, showlegend=False
@@ -268,7 +273,7 @@ if st.session_state.df_combined is not None:
 
     with tab2:
 
-        total1,total2,total3,total4,total5=st.columns(5,gap='small')
+        total1,total2,total3=st.columns(3,gap='small')
         with total1:
             st.info('Sales Activity',icon="💲")
             st.metric(label="Total Penjualan",value=formatted_number1)
@@ -281,13 +286,6 @@ if st.session_state.df_combined is not None:
             st.info('Wilayah',icon="🏠")
             st.metric(label="Total Provinsi",value=totalprov)
 
-        with total4:
-            st.info('Central Earnings',icon="💰")
-            st.metric(label="Median TZS",value=10000)
-
-        with total5:
-            st.info('Ratings',icon="💰")
-            st.metric(label="Rating",value="10K",help=f""" Total Rating: 10000 """)
 
         penjualan, servis = st.tabs(["Data Penjualan", "Data Servis"])
 

@@ -17,11 +17,11 @@ upload_data = st.Page(
     icon=":material/upload:",
     default=True,
 )
-upload_dealer = st.Page(
-    "pages/upload_dealer.py",
-    title="Upload Data Lokasi",
-    icon=":material/home:",
-)
+# upload_dealer = st.Page(
+#     "pages/upload_dealer.py",
+#     title="Upload Data Lokasi",
+#     icon=":material/home:",
+# )
 process_data = st.Page(
     "pages/process_data.py",
     title="Pengolahan Data",
@@ -41,7 +41,7 @@ visual_data = st.Page(
 # --- NAVIGATION SETUP [WITH SECTIONS]---
 pg = st.navigation(
     {
-        "File": [upload_data, upload_dealer],
+        "File": [upload_data],
         "Proses": [process_data, uji_data, visual_data],
     }
 )

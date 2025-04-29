@@ -71,13 +71,17 @@ with pro3:
     if st.session_state['dataset1'] is not None:
         st.subheader("Merging Data")
         st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
+
         dl1 = st.session_state['dealer1']
         filter1 = df1[~df1['Dealer name'].isin(dl1['Dealer name'])]
         df_penjualan1 = pd.merge(df1, dl1, on='Dealer name')
-        jumlah_filter1 = len(filter1)
-        jumlah_filter1 = f"{jumlah_filter1:,.0f}"
+        unique_dealer_penjualan = df_penjualan1.groupby('Provinces')['Dealer name'].unique().reset_index()
+
         st.session_state['df_penjualan1'] = df_penjualan1
         st.dataframe(df_penjualan1)
+
+        jumlah_filter1 = len(filter1)
+        jumlah_filter1 = f"{jumlah_filter1:,.0f}"
         with st.expander(f'Lihat {jumlah_filter1} data dealer penjualan yang tidak memiliki lokasi.'):
             st.write(f"Data dari dealer yang memiliki lokasi ada {jumlah_filter1}.", filter1)
     else:
@@ -85,13 +89,17 @@ with pro3:
 
     if st.session_state['dataset2'] is not None:
         st.markdown("Dilakukan penggabungan data servis dengan data lokasi dealer:")
+
         dl2 = st.session_state['dealer2']
         filter2 = df2[~df2['Dealer name'].isin(dl2['Dealer name'])] 
         df_servis1 = pd.merge(df2, dl2, on='Dealer name')
-        jumlah_filter2 = len(filter2)
-        jumlah_filter2 = f"{jumlah_filter2:,.0f}"
+        unique_dealer_servis = df_servis1.groupby('Provinces')['Dealer name'].unique().reset_index()
+        
         st.session_state['df_servis1'] = df_servis1
         st.dataframe(df_servis1)
+
+        jumlah_filter2 = len(filter2)
+        jumlah_filter2 = f"{jumlah_filter2:,.0f}"
         with st.expander(f'Lihat {jumlah_filter2} data dealer servis yang tidak memiliki lokasi.'):
             st.write("", filter2)
     else:
@@ -116,9 +124,14 @@ with pro4:
 
 
         st.subheader("Result")
-        # st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
+
+        merged_dealers = pd.merge(unique_dealer_penjualan, unique_dealer_servis, on='Provinces', how='outer', suffixes=('_penjualan', '_servis'))
+        merged_dealers['all_dealers'] = merged_dealers['Dealer name_penjualan'].combine_first(merged_dealers['Dealer name_servis'])
+        
         df_combined = pd.merge(group1, group2, on='Provinces', how='outer')
         df_combined = df_combined.fillna(0)
+        df_combined['Total dealer'] = merged_dealers['all_dealers'].apply(len)
+
         st.session_state.df_combined = df_combined
         st.dataframe(df_combined)
     else:
