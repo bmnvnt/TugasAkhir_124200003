@@ -51,7 +51,7 @@ if st.session_state.df_combined is not None:
 
         finalpenjualan = pd.merge(st.session_state['df_penjualan1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
         finalservis = pd.merge(st.session_state['df_servis1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
-        gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis', 'Cluster']], how='left', left_on='name', right_on='Provinces')
+        gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis','Total dealer', 'Cluster']], how='left', left_on='name', right_on='Provinces')
 
         # Membuat dua kolom untuk peta dan agregasi data
         left_map, right_summary = st.columns([2, 0.65])
@@ -80,8 +80,8 @@ if st.session_state.df_combined is not None:
             st.session_state['cluster_colors'] = cluster_colors
 
             popup = folium.GeoJsonTooltip(
-                    fields=["Provinces", "Total penjualan", "Total servis", "Cluster"],
-                    aliases=["Provinsi", "Total Penjualan", "Total Servis", "Cluster"],
+                    fields=["Provinces", "Total penjualan", "Total servis", "Total dealer", "Cluster"],
+                    aliases=["Provinsi", "Total Penjualan", "Total Servis", "Total Dealer", "Cluster"],
                     localize=True,
                     labels=True,
                     # style="background-color: yellow;",
@@ -103,7 +103,6 @@ if st.session_state.df_combined is not None:
                         'fillOpacity': 0.8
                     },
                     tooltip=popup
-                    # popup=popup
                 ).add_to(map_indonesia)
 
             folium.GeoJson(gdf,show=False, name="Batas Wilayah", zoom_on_click=True,
@@ -112,34 +111,6 @@ if st.session_state.df_combined is not None:
                     "green" if "e" in feature["properties"]["name"].lower() else "#ffff00"
                 ),
             }).add_to(map_indonesia)
-            
-
-            # #Menambahkan marker menggunakan MarkerCluster
-            # marker_cluster = MarkerCluster(name="Titik Wilayah", show=True).add_to(map_indonesia)
-
-            # # Menambahkan marker untuk setiap kabupaten/kota dalam GeoDataFrame
-            # for idx, row in gdf.iterrows():
-            #     centroid = row['geometry'].centroid
-            #     prov = row['name']  # Asumsikan ada kolom 'name' yang berisi nama provinsi
-            #     cl = row['Cluster']
-            #     sl = row['Total penjualan']
-            #     sr = row['Total servis']
-                
-            #     # Membuat popup yang berisi nama provinsi
-            #     # popup_text = f"Provinsi : {prov} <br> Total Penjualan : {sl} <br> Cluster:  {cl}"
-            #     popup = folium.GeoJsonPopup(
-            #         fields=["Provinces", "Total penjualan"],
-            #         aliases=["Provinsi", "Total Penjualan"],
-            #         localize=True,
-            #         labels=True,
-            #         style="background-color: yellow;",
-            #     )
-
-            #     folium.Marker(
-            #         location=[centroid.y, centroid.x],  # Lokasi marker menggunakan centroid
-            #         popup=popup,
-            #         icon=folium.Icon(color='blue')  # Warna default blue
-            #     ).add_to(marker_cluster) #marker_cluster
                 
             folium.LayerControl().add_to(map_indonesia)
 
@@ -154,30 +125,40 @@ if st.session_state.df_combined is not None:
             st.subheader("Market Summary")
             
             # Membuat dua kolom di sebelah kanan untuk metrik
-            # l, r = st.columns(2)
             st.html('<span class="high_indicator"></span>')
-            # with l:
+
             prov = len(data_cleansed['Provinces'])
             totalprov = f"{prov:,.0f}"
             st.metric("Provinsi", totalprov)
             st.metric("Total Penjualan", formatted_number1)
             st.metric("Total Service", formatted_number2)
             st.metric("Target Penjualan Tahunan", formatted_number1 + "/24000")
-            
-
-        # Tampilkan informasi tentang data
-        
         
         # DataFrame display
         with st.expander('Lihat Data JSON (GeoData)'):
             st.write("Data GeoJSON yang dimuat:", gdf)
         
         # Menampilkan jumlah data per cluster
-        cluster_counts = data_cleansed['Cluster'].value_counts()
-        st.subheader('Jumlah Data per Cluster')
-        st.write(cluster_counts, sorted='Cluster')
+        cluster_counts = data_cleansed.groupby('Cluster').size()
+        kiri, kanan = st.columns(2)
+        with kiri:
+            jumlah_cluster2 = go.Figure(data=[go.Pie(labels=cluster_counts.index, values=cluster_counts.values, hole=.3)])
+            jumlah_cluster2.update_layout(title={'text':'Persentase Cluster', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                                         uniformtext_minsize=16, uniformtext_mode='hide'
+                                       )
+            st.plotly_chart(jumlah_cluster2)
+            
+        with kanan:
+            jumlah_cluster = px.bar(x=cluster_counts.index,
+                                    y=cluster_counts.values,
+                                    labels={'x': 'Cluster', 'y': 'Jumlah Anggota'}, title="Perbandingan Cluster", text_auto=True)
+            jumlah_cluster.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
+            jumlah_cluster.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
+                                xaxis={'categoryorder':'total descending'}, showlegend=False
+                            )
+            st.plotly_chart(jumlah_cluster)
         
-        # data_cleansed = st.session_state.data_cleansed
+
         nama_tabs=[f"Cluster {i+1}" for i in range (k_slider)]
         tabs=st.tabs(nama_tabs)
 
@@ -192,6 +173,8 @@ if st.session_state.df_combined is not None:
                 max_sales = cluster_data['Total penjualan'].max()
                 min_servis = cluster_data['Total servis'].min()
                 max_servis = cluster_data['Total servis'].max()
+                min_dealer = cluster_data['Total dealer'].min()
+                max_dealer = cluster_data['Total dealer'].max()
 
                 cl_number = i+1
                 color = st.session_state['cluster_colors'].get(cl_number, "Color not found")
@@ -200,8 +183,10 @@ if st.session_state.df_combined is not None:
                 max_sales = f"{max_sales:,.0f}"
                 min_servis = f"{min_servis:,.0f}"
                 max_servis = f"{max_servis:,.0f}"
+                min_dealer = f"{min_dealer:,.0f}"
+                max_dealer = f"{max_dealer:,.0f}"
                 
-                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
+                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer per provinsi mulai dari {min_dealer} hingga {max_dealer} penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
                 
                 with st.expander('Lihat Data per kluster'):
                     st.write("", cluster_data)
@@ -260,9 +245,6 @@ if st.session_state.df_combined is not None:
                         )
                     st.plotly_chart(fig_cl_kanan)
             
-                
-                
-
         # Visualisasi hasil clustering (scatter plot)
         with st.expander('Grafik Scatter Plot Klaster'):
             st.subheader('Visualisasi Hasil Clustering')
@@ -293,13 +275,7 @@ if st.session_state.df_combined is not None:
             # Form filter
             prov_filter = st.multiselect("Pilih provinsi", options=finalpenjualan['Provinces'].unique(), default=None, key="prv")
             series_filter = st.multiselect("Pilih merek", options=finalpenjualan['Series'].unique(), default=None, key = "srs")
-            #     submit = st.form_submit_button("Filter")
 
-            # if submit:
-            #     filtered_st.session_state['df1'] = st.session_state['df1'][
-            #         (st.session_state['df1']['merek'].isin(merek_filter)) &
-            #         (st.session_state['df1']['tahun'] == tahun_filter)
-            #     ]
             l,r = st.columns([2.02, 1])
             
             with l:
@@ -312,6 +288,7 @@ if st.session_state.df_combined is not None:
                     filtered_df = finalpenjualan[finalpenjualan['Series'].isin(series_filter)]
                 elif prov_filter:
                     filtered_df = finalpenjualan[finalpenjualan['Provinces'].isin(prov_filter)]
+                    
                 else:
                     filtered_df = finalpenjualan
 
@@ -351,7 +328,6 @@ if st.session_state.df_combined is not None:
                 labels = total3['Customer type']
                 values = total3['Total penjualan']
                 
-                # Use `hole` to create a donut-like pie chart
                 fig_sales3 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3)])
                 fig_sales3.update_layout(title={'text':'Persentase Tipe Pelanggan', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                                          uniformtext_minsize=16, uniformtext_mode='hide'
@@ -377,7 +353,6 @@ if st.session_state.df_combined is not None:
                 # Use `hole` to create a donut-like pie chart
                 fig_sales4 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3, 
                                                     textfont_size=16, 
-                                                    # marker=dict(pattern=dict(shape=["x", "+", "-"]))
                                                     )])
                 fig_sales4.update_layout(title={'text':'Persentase Promotion yang digunakan', 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                                          uniformtext_minsize=12, uniformtext_mode='hide'
@@ -413,7 +388,6 @@ if st.session_state.df_combined is not None:
                 labels = total4['Payment method']
                 values = total4['Total penjualan']
                 
-                # Use `hole` to create a donut-like pie chart
                 fig_sales4 = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3, 
                                                     textfont_size=16, 
                                                     # marker=dict(pattern=dict(shape=["x", "+", "-"]))

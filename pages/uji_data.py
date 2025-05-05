@@ -15,6 +15,7 @@ if st.session_state.df_combined is not None:
     with tab1:
         scaler = StandardScaler()
         data_standardized = pd.DataFrame(scaler.fit_transform(st.session_state.df_combined.select_dtypes(include=[np.number])))
+        
 
         st.session_state.data_standardized = data_standardized
                 
@@ -46,35 +47,28 @@ if st.session_state.df_combined is not None:
 
         
     with tab3:
+        # Menentukan nilai k terbaik dengan silhouette score
+        k_range = range(2, 11)
+        silhouette_scores = []
+        for k in k_range:
+            kmeans = KMeans(n_clusters=k, random_state=42)
+            kmeans.fit(data_standardized)
+            silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
+            
+        #Tabel hasil silhouette score untuk k=2 sampai k=10
+        k_scores_df = pd.DataFrame({
+            'K': k_range,
+            'Silhouette Score': silhouette_scores
+        })
+
+        st.subheader('Silhouette Score untuk Nilai K (2-10)')
+        st.dataframe(k_scores_df)
+
         fig, ax = plt.subplots()
-        ax = kelbow_visualizer(KMeans(random_state=42), data_standardized, k=(2,11), metric='silhouette', timings=False)
+        ax = kelbow_visualizer(KMeans(random_state=42), data_standardized, k=(2,11), metric='silhouette',distance_metric='euclidean', timings=False)
 
         fig.set_size_inches(14, 6)
         st.pyplot(fig)
-        # # Menentukan nilai k terbaik dengan silhouette score
-        # k_range = range(2, 11)
-        # silhouette_scores = []
-        # for k in k_range:
-        #     kmeans = KMeans(n_clusters=k, random_state=42)
-        #     kmeans.fit(data_standardized)
-        #     silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
-            
-        # #Tabel hasil silhouette score untuk k=2 sampai k=10
-        # k_scores_df = pd.DataFrame({
-        #     'K': k_range,
-        #     'Silhouette Score': silhouette_scores
-        # })
-
-        # st.subheader('Silhouette Score untuk Nilai K (2-10)')
-        # st.dataframe(k_scores_df)
-
-        # fig1 = plt.figure(figsize=(14,6))
-        # x = k_range
-        # plt.plot(x, silhouette_scores)
-        # plt.title('Silhouette Scores')
-        # plt.xlabel('Number of clusters')
-        # plt.ylabel('Silhouette Scores')
-        # st.pyplot(fig1)
 
         # # Pilih K terbaik
         # optimal_k = k_range[np.argmax(silhouette_scores)]
