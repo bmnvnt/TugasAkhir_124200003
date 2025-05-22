@@ -11,7 +11,7 @@ with pro1:
     if st.session_state['dataset1'] is not None:
         st.subheader("Raw Data")
         jumlah_data1 = len(st.session_state['dataset1'])
-        formatted_number1 = f"{jumlah_data1:,.0f}"
+        formatted_number1 = f"{jumlah_data1:,.0f}" #memformat jumlah data ke string, dipisahkan koma dan dibulatkan
         st.write(f"Digunakan dataset penjualan dari PT. SGMW Motor Indonesia dengan {formatted_number1} jumlah data.")
         st.dataframe(st.session_state['dataset1'])
         # st.dataframe(st.session_state['dealer1'])
@@ -40,6 +40,7 @@ with pro2:
                         'SubDistrict', 'District/Cities', 'City', 'Material code', 'VIN', 'Charging pile program',
                         'Configuration', 'Order Status', 'Customer level', 'Customer No', 'Street',
                         'Contact number', 'Vehicle delivery date', 'Coupon code', 'Leasing'], axis=1)
+        
         df1['Colour'] = df1['Colour'].replace('Candy white', 'Candy White')
         df1['Total penjualan']=1
         st.session_state['df1'] = df1
@@ -55,6 +56,7 @@ with pro2:
                     'customer address','Contact name','Contact mobile phone', 'Total Labour Amount', 'Total Sublet Amount', 'Total Parts Amount'], axis=1)
 
         df2['Total servis']=1
+
         # Ubah ke datetime format dari dd/mm/yyyy
         df2['Order time'] = pd.to_datetime(df2['Order time'])
 
@@ -72,10 +74,10 @@ with pro3:
         st.subheader("Merging Data")
         st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
 
-        dl1 = st.session_state['dealer1']
-        filter1 = df1[~df1['Dealer name'].isin(dl1['Dealer name'])]
+        dl1 = st.session_state['dealer1'] #session data dari dala lokasi
+        filter1 = df1[~df1['Dealer name'].isin(dl1['Dealer name'])] #memfilter data df1 yang data dealernya nggk ada di dl1
         df_penjualan1 = pd.merge(df1, dl1, on='Dealer name')
-        unique_dealer_penjualan = df_penjualan1.groupby('Provinces')['Dealer name'].unique().reset_index()
+        unique_dealer_penjualan = df_penjualan1.groupby('Provinces')['Dealer name'].unique().reset_index() #data dealer per provinsi untuk di tahap selanjutnya
 
         st.session_state['df_penjualan1'] = df_penjualan1
         st.dataframe(df_penjualan1)

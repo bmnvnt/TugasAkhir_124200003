@@ -15,7 +15,6 @@ if st.session_state.df_combined is not None:
     with tab1:
         scaler = StandardScaler()
         data_standardized = pd.DataFrame(scaler.fit_transform(st.session_state.df_combined.select_dtypes(include=[np.number])))
-        
 
         st.session_state.data_standardized = data_standardized
                 
@@ -70,9 +69,10 @@ if st.session_state.df_combined is not None:
         fig.set_size_inches(14, 6)
         st.pyplot(fig)
 
-        # # Pilih K terbaik
-        # optimal_k = k_range[np.argmax(silhouette_scores)]
-        # optimal_nilai = k_scores_df['Silhouette Score'].max()
-        # st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}, dengan nilai {optimal_nilai}')
+        # Pilih K terbaik
+        optimal_k = k_range[np.argmax(silhouette_scores)]
+        optimal_nilai = k_scores_df['Silhouette Score'].max()
+        st.write(f'Nilai K terbaik berdasarkan Silhouette Score adalah K = {optimal_k}, dengan nilai {optimal_nilai}')
+        st.write(f'Disarankan untuk menggunakan nilai K = {optimal_k} dalam penentuan jumlah cluster.')
 else:
     st.error("Pengolahan data belum dilakukan. Harap lakukan pengolahan data terlebih dahulu.")

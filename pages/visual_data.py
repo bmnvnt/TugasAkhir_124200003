@@ -16,17 +16,15 @@ import seaborn as sns
 st.html('style.html')
 st.title("Visualisasi Data")
 
-tab1,tab2 = st.tabs(["Klastering","Analisa Data"])
+tab1,tab2 = st.tabs(["Clustering","Analisa Data"])
 if st.session_state.df_combined is not None:
     with tab1:
         if 'gdf' not in st.session_state:
-            st.session_state.gdf = gpd.read_file('./data/newindo.json')  # Ganti dengan path file yang sesuai
+            st.session_state.gdf = gpd.read_file('./data/newindo.json')
 
-        # Load data geojson
         gdf = st.session_state.gdf
 
-        # Membuat peta menggunakan Folium
-        st.header("Peta Klastering Market Coverage Area Wuling di Indonesia")
+        st.header("Peta Clustering Market Coverage Area Wuling di Indonesia")
         k_slider = st.slider('Pillih jumlah klaster', 2, 10, value=2)
 
         jumlah_data1 = len(st.session_state['df_penjualan1'])
@@ -39,42 +37,37 @@ if st.session_state.df_combined is not None:
         kmeans = KMeans(n_clusters=k_slider, random_state=42)
         kmeans.fit(st.session_state.data_standardized)
             
-        # Menampilkan cluster
         clusters = pd.DataFrame(kmeans.labels_, columns=['Cluster'])
             
         data_cleansed = st.session_state.df_combined.copy()
         data_cleansed['Cluster'] = clusters +1  
 
-        # grouped_km = pd.DataFrame(data_cleansed.select_dtypes(include=[np.number]))
-        # grouped_km = grouped_km.groupby(['Cluster']).mean().round(0)
-        # st.write(grouped_km.select_dtypes(include=[np.number]))
-
         finalpenjualan = pd.merge(st.session_state['df_penjualan1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
         finalservis = pd.merge(st.session_state['df_servis1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
         gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis','Total dealer', 'Cluster']], how='left', left_on='name', right_on='Provinces')
 
-        # Membuat dua kolom untuk peta dan agregasi data
         left_map, right_summary = st.columns([2, 0.65])
 
         with left_map:
             # Membuat peta
             map_indonesia = folium.Map(location=[-3.0, 118.0], zoom_start=4.5)
+
+            #layer tipe peta
             folium.TileLayer(
-            tiles='CartoDB positron',  # Pilih tile map yang tidak memiliki watermark
+            tiles='CartoDB positron',
             attr='',
             ).add_to(map_indonesia)   
 
-            # unique_clusters = gdf['Cluster'].unique()
-            cluster_colors = {1: 'orange',
-                              2: 'green',
-                              3: 'yellow',
-                              4: 'red',  
-                              5: 'blue', 
-                              6: 'purple', 
-                              7: 'brown',  
-                              8: 'pink',  
-                              9: 'grey', 
-                              10:'yellow',  
+            cluster_colors = {1: 'Orange',
+                              2: 'Green',
+                              3: 'Yellow',
+                              4: 'Red',  
+                              5: 'Blue', 
+                              6: 'Purple', 
+                              7: 'Brown',  
+                              8: 'Pink',  
+                              9: 'Grey', 
+                              10:'Yellow',  
             }
 
             st.session_state['cluster_colors'] = cluster_colors
@@ -84,9 +77,9 @@ if st.session_state.df_combined is not None:
                     aliases=["Provinsi", "Total Penjualan", "Total Servis", "Total Dealer", "Cluster"],
                     localize=True,
                     labels=True,
-                    # style="background-color: yellow;",
                 )
-            # Menambahkan layer GeoJSON ke peta
+            
+            #layer cluster
             folium.GeoJson(
                     gdf,
                     name="Cluster",
@@ -97,14 +90,15 @@ if st.session_state.df_combined is not None:
                 ), 'fillOpacity' : 0.1
             },
                     style_function=lambda feature: {
-                        'fillColor': cluster_colors.get(feature['properties']['Cluster'], 'gray'),  # Warna dinamis berdasarkan cluster
+                        'fillColor': cluster_colors.get(feature['properties']['Cluster'], 'gray'),
                         'color': 'black',
                         'weight': 1,
                         'fillOpacity': 0.8
                     },
                     tooltip=popup
                 ).add_to(map_indonesia)
-
+            
+            #layer batas wilayah
             folium.GeoJson(gdf,show=False, name="Batas Wilayah", zoom_on_click=True,
                 highlight_function=lambda feature: {
                 "fillColor": (
@@ -114,19 +108,15 @@ if st.session_state.df_combined is not None:
                 
             folium.LayerControl().add_to(map_indonesia)
 
-            # Menyimpan peta ke file HTML
+            #peta ke file HTML
             map_indonesia.save('map_without_watermark.html') 
 
-            # Menampilkan peta di Streamlit
+            #nampilin peta di Streamlit
             folium_static(map_indonesia, width=None, height=460)  # Ukuran peta
 
         with right_summary:
-            # Menampilkan agregasi data atau metrik di sebelah kanan
             st.subheader("Market Summary")
-            
-            # Membuat dua kolom di sebelah kanan untuk metrik
             st.html('<span class="high_indicator"></span>')
-
             prov = len(data_cleansed['Provinces'])
             totalprov = f"{prov:,.0f}"
             st.metric("Provinsi", totalprov)
@@ -134,11 +124,11 @@ if st.session_state.df_combined is not None:
             st.metric("Total Service", formatted_number2)
             st.metric("Target Penjualan Tahunan", formatted_number1 + "/24000")
         
-        # DataFrame display
+        #expander
         with st.expander('Lihat Data JSON (GeoData)'):
-            st.write("Data GeoJSON yang dimuat:", gdf)
+            st.write("Data JSON yang dimuat:", gdf)
         
-        # Menampilkan jumlah data per cluster
+        #nampilin jumlah data per cluster
         cluster_counts = data_cleansed.groupby('Cluster').size()
         kiri, kanan = st.columns(2)
         with kiri:
@@ -186,9 +176,9 @@ if st.session_state.df_combined is not None:
                 min_dealer = f"{min_dealer:,.0f}"
                 max_dealer = f"{max_dealer:,.0f}"
                 
-                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer per provinsi mulai dari {min_dealer} hingga {max_dealer} penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
+                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer per provinsi mulai dari {min_dealer} hingga {max_dealer}, penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} mobil selama 6 bulan")
                 
-                with st.expander('Lihat Data per kluster'):
+                with st.expander('Lihat Data per cluster'):
                     st.write("", cluster_data)
                     
                 kiri, kanan = st.columns(2)
@@ -196,7 +186,7 @@ if st.session_state.df_combined is not None:
                     top5 = cluster_penjualan.groupby('Provinces')['Total penjualan'].sum().reset_index()
                     top5 = top5.sort_values(by='Total penjualan', ascending=False).head(10)
 
-                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total penjualan", title="Top 10 Provinsi vs Sales", text_auto=True)
+                    fig_cl_kiri = px.bar(top5, x="Provinces", y="Total penjualan", title="Top 10 Provinsi vs Penjualan", text_auto=True)
                     fig_cl_kiri.update_traces(textfont_size=16, textangle=0, textposition="outside", cliponaxis=False,)
                     fig_cl_kiri.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                             xaxis={'categoryorder':'total descending'}, showlegend=False
@@ -272,9 +262,9 @@ if st.session_state.df_combined is not None:
         penjualan, servis = st.tabs(["Data Penjualan", "Data Servis"])
 
         with penjualan:
-            # Form filter
+            #filter
             prov_filter = st.multiselect("Pilih provinsi", options=finalpenjualan['Provinces'].unique(), default=None, key="prv")
-            series_filter = st.multiselect("Pilih merek", options=finalpenjualan['Series'].unique(), default=None, key = "srs")
+            series_filter = st.multiselect("Pilih series", options=finalpenjualan['Series'].unique(), default=None, key = "srs")
 
             l,r = st.columns([2.02, 1])
             
@@ -295,13 +285,18 @@ if st.session_state.df_combined is not None:
                 # st.write(filtered_df)
                 total = filtered_df.groupby('Report date')['Total penjualan'].sum().reset_index()
                 # st.write(total)
+                if len(prov_filter) == 0:
+                    title="Total Penjualan Bulanan di Indonesia"
+                else:
+                    title=f'Total Penjualan Bulanan di {", ".join(map(str, prov_filter))}'
+
                 fig_sales=px.line(
                             total,
                             x="Report date",
                             y="Total penjualan",
                             markers=True,
                             # color = "Cluster"
-                            title="Total penjualan bulanan",
+                            title=title,
                             height=398
                         )
                 fig_sales.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'})
@@ -400,7 +395,7 @@ if st.session_state.df_combined is not None:
 
         with servis:
             prov_filter2 = st.multiselect("Pilih provinsi", options=finalservis['Provinces'].unique(), default=None, key="prov")
-            series_filter2 = st.multiselect("Pilih merek", options=finalservis['Series'].unique(), default=None, key="series")
+            series_filter2 = st.multiselect("Pilih series", options=finalservis['Series'].unique(), default=None, key="series")
 
             
 
@@ -421,13 +416,18 @@ if st.session_state.df_combined is not None:
 
                 total3 = filtered_df.groupby('Order time')['Total servis'].sum().reset_index()
 
+                if len(prov_filter2) == 0:
+                    title2="Total Servis Bulanan di Indonesia"
+                else:
+                    title2=f'Total Servis Bulanan di {", ".join(map(str, prov_filter2))}'
+
                 fig_servis3=px.line(
                             total3,
                             x="Order time",
                             y="Total servis",
                             markers=True,
                             # color = "Cluster"
-                            title="Total servis bulanan",
+                            title=title2,
                             height=398
                         )
                 fig_servis3.update_layout(title={'x':0.5, 'xanchor':'center', 'yanchor':'top'})

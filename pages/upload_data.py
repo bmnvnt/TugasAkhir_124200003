@@ -8,7 +8,6 @@ def load_dataset(uploaded_file):
         return dataset
     return None
 
-# Menyimpan data ke session_state agar tidak hilang saat reload
 if 'dataset1' not in st.session_state:
     st.session_state['dataset1'] = None
 
@@ -20,10 +19,9 @@ st.title(""" Aplikasi Klastering Market Coverage Area Wuling \n """)
 
 uploaded_file1 = st.file_uploader("Pilih file data penjualan", type=["csv"])
 uploaded_file2 = st.file_uploader("Pilih file data servis", type=["csv"])
-st.session_state['dealer1'] = pd.read_csv('./data/data_dealer_penjualan.csv', sep=';')
-st.session_state['dealer2'] = pd.read_csv('./data/data_dealer_purna.csv', sep=';')
+st.session_state['dealer1'] = pd.read_csv('./data/data_dealer_penjualan.csv', sep=';')    #data dealer penjualan
+st.session_state['dealer2'] = pd.read_csv('./data/data_dealer_purna.csv', sep=';')      #data dealer servis
 
-# Menangani file pertama
 if uploaded_file1 is not None:
     st.session_state['dataset1'] = load_dataset(uploaded_file1)
     st.success("Upload data penjualan berhasil")
@@ -33,7 +31,6 @@ else:
     else:
         st.error("Belum ada data penjualan yang diunggah.")
 
-# Menangani file kedua
 if uploaded_file2 is not None:
     st.session_state['dataset2'] = load_dataset(uploaded_file2)
     st.success("Upload data servis berhasil")

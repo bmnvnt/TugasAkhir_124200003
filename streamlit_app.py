@@ -38,7 +38,6 @@ visual_data = st.Page(
     icon=":material/map:",
 )
 
-# --- NAVIGATION SETUP [WITH SECTIONS]---
 pg = st.navigation(
     {
         "File": [upload_data],
