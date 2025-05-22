@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Wuling Klastering",
+    page_title="Wuling Clustering",
     page_icon="./img/logored.png",
     layout="wide"
 )
