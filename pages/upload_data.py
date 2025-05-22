@@ -14,8 +14,7 @@ if 'dataset1' not in st.session_state:
 if 'dataset2' not in st.session_state:
     st.session_state['dataset2'] = None
 
-st.title(""" Aplikasi Klastering Market Coverage Area Wuling \n """)
-# st.markdown("Aplikasi ini dibuat untuk membantu PT. SGMW Motor Indonesia dalam mengolah data Sales dan After Sales.")
+st.title(""" Aplikasi Clustering Market Coverage Area Wuling \n """)
 
 uploaded_file1 = st.file_uploader("Pilih file data penjualan", type=["csv"])
 uploaded_file2 = st.file_uploader("Pilih file data servis", type=["csv"])
