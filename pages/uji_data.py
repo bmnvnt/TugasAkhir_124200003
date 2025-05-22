@@ -9,7 +9,7 @@ import seaborn as sns
 from yellowbrick.cluster import KElbowVisualizer
 from yellowbrick.cluster.elbow import kelbow_visualizer
 
-st.title("Pemodelan Data")
+st.title("Evaluasi Data")
 tab1, tab2, tab3 = st.tabs(["Standarization", "Elbow Method", "Silhoutte Score"])
 if st.session_state.df_combined is not None:
     with tab1:
@@ -37,7 +37,7 @@ if st.session_state.df_combined is not None:
         
     with tab2:
         fig, visualizer = plt.subplots()
-        visualizer = KElbowVisualizer(KMeans(), k=(1, 11), distance_metric='euclidean')  
+        visualizer = KElbowVisualizer(KMeans(), k=(1, 11), distance_metric='euclidean', random_state=42)  
         visualizer.fit(data_standardized)
         visualizer.poof()
         visual = visualizer.ax.figure

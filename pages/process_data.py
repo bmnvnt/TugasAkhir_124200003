@@ -14,7 +14,7 @@ with pro1:
         formatted_number1 = f"{jumlah_data1:,.0f}" #memformat jumlah data ke string, dipisahkan koma dan dibulatkan
         st.write(f"Digunakan dataset penjualan dari PT. SGMW Motor Indonesia dengan {formatted_number1} jumlah data.")
         st.dataframe(st.session_state['dataset1'])
-        # st.dataframe(st.session_state['dealer1'])
+        st.dataframe(st.session_state['dealer1'])
     else:
         st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
 
@@ -23,7 +23,7 @@ with pro1:
         formatted_number2 = f"{jumlah_data2:,.0f}"
         st.write(f"Digunakan dataset purna jual dari PT. SGMW Motor Indonesia dengan {formatted_number2} jumlah data.")
         st.dataframe(st.session_state['dataset2'])
-        # st.dataframe(st.session_state['dealer2'])
+        st.dataframe(st.session_state['dealer2'])
     else:
         st.error("Data purna jual belum diunggah. Harap unggah file terlebih dahulu.")
  

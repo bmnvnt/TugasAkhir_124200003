@@ -29,7 +29,7 @@ process_data = st.Page(
 )
 uji_data = st.Page(
     "pages/uji_data.py",
-    title="Pemodelan Data",
+    title="Evaluasi Data",
     icon=":material/settings:",
 )
 visual_data = st.Page(
