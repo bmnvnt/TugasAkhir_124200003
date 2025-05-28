@@ -176,7 +176,7 @@ if st.session_state.df_combined is not None:
                 min_dealer = f"{min_dealer:,.0f}"
                 max_dealer = f"{max_dealer:,.0f}"
                 
-                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer dengan jumlah mulai dari {min_dealer} hingga {max_dealer}, penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} servis mobil selama 6 bulan")
+                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer dengan jumlah mulai dari {min_dealer} hingga {max_dealer}, penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} servissa  mobil selama 6 bulan")
                 
                 with st.expander('Lihat Data per cluster'):
                     st.write("", cluster_data)
