@@ -46,7 +46,6 @@ if st.session_state.df_combined is not None:
 
         
     with tab3:
-        # Menentukan nilai k terbaik dengan silhouette score
         k_range = range(2, 11)
         silhouette_scores = []
         for k in k_range:
@@ -54,7 +53,6 @@ if st.session_state.df_combined is not None:
             kmeans.fit(data_standardized)
             silhouette_scores.append(silhouette_score(data_standardized, kmeans.labels_))
             
-        #Tabel hasil silhouette score untuk k=2 sampai k=10
         k_scores_df = pd.DataFrame({
             'K': k_range,
             'Silhouette Score': silhouette_scores

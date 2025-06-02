@@ -57,10 +57,8 @@ with pro2:
 
         df2['Total servis']=1
 
-        # Ubah ke datetime format dari dd/mm/yyyy
         df2['Order time'] = pd.to_datetime(df2['Order time'])
 
-        # Format ulang jadi yyyy-mm-dd (kalau ingin string)
         df2['Order time'] = df2['Order time'].dt.strftime('%Y-%m-%d')
         st.session_state['df2'] = df2
         st.dataframe(df2)
