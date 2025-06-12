@@ -56,16 +56,16 @@ if st.session_state.df_combined is not None:
             attr='',
             ).add_to(map_indonesia)   
 
-            cluster_colors = {1: 'Orange',
-                              2: 'Green',
+            cluster_colors = {1: 'Red',
+                              2: 'Orange',
                               3: 'Yellow',
-                              4: 'Red',  
+                              4: 'Green',  
                               5: 'Blue', 
                               6: 'Purple', 
-                              7: 'Brown',  
-                              8: 'Pink',  
-                              9: 'Grey', 
-                              10:'Yellow',  
+                              7: 'Pink',  
+                              8: 'Brown',  
+                              9: 'Dark Brown', 
+                              10:'Cream',  
             }
 
             st.session_state['cluster_colors'] = cluster_colors
@@ -149,12 +149,21 @@ if st.session_state.df_combined is not None:
 
         nama_tabs=[f"Cluster {i+1}" for i in range (k_slider)]
         tabs=st.tabs(nama_tabs)
+        # Mengelompokkan data berdasarkan cluster dan mencari nilai maksimum dari penjualan setiap cluster
+        max_penjualan = data_cleansed.groupby('Cluster')['Total penjualan'].max()
+
+        # Mengurutkan berdasarkan nilai maksimum penjualan dari terbesar ke terkecil
+        urutan_penjualan = max_penjualan.sort_values(ascending=True)
+        # urutan_penjualan['Urutan'] = urutan_penjualan['Cluster'].apply(lambda x: urutan_daerah.index(x))
+        # st.write(urutan_penjualan)
 
         for i in range(k_slider):
+            
             with tabs[i]:
-                cluster_penjualan = finalpenjualan[finalpenjualan['Cluster'] == i+1]
-                cluster_servis = finalservis[finalservis['Cluster'] == i+1]
-                cluster_data = data_cleansed[data_cleansed['Cluster'] == i+1]
+                rank = urutan_penjualan.index[i]
+                cluster_penjualan = finalpenjualan[finalpenjualan['Cluster'] == rank]
+                cluster_servis = finalservis[finalservis['Cluster'] == rank]
+                cluster_data = data_cleansed[data_cleansed['Cluster'] == rank]
                 st.write(f"### Cluster {i+1}:")
                 st.subheader('Karakteristik Cluster')
                 min_sales = cluster_data['Total penjualan'].min()
@@ -237,7 +246,7 @@ if st.session_state.df_combined is not None:
         with st.expander('Grafik Scatter Plot Klaster'):
             st.subheader('Visualisasi Hasil Clustering')
             fig, ax = plt.subplots(figsize=(14, 6))
-            sns.scatterplot(x=data_cleansed.iloc[:, 1], y=data_cleansed.iloc[:, 2], hue=data_cleansed['Cluster'], palette='tab10', ax=ax)
+            sns.scatterplot(x=data_cleansed.iloc[:, 1], y=data_cleansed.iloc[:, 2], hue=data_cleansed['Cluster'], palette=cluster_colors, ax=ax)
             ax.set_title('Visualisasi Hasil Clustering')
             st.pyplot(fig)
 

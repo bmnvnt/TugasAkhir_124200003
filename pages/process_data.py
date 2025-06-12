@@ -3,7 +3,7 @@ import pandas as pd
 
 st.title("Pengolahan Data")
 
-pro1,pro2,pro3,pro4 = st.tabs(["Raw Data","Cleaning Data", "Merging Data", "Aggregation Data"])
+pro1,pro2,pro3,pro4, pro5 = st.tabs(["Raw Data", "Raw Dealer","Cleaning Data", "Merging Data", "Aggregation Data"])
 st.session_state.df_combined = None
 
 #RAW DATA
@@ -14,7 +14,7 @@ with pro1:
         formatted_number1 = f"{jumlah_data1:,.0f}" #memformat jumlah data ke string, dipisahkan koma dan dibulatkan
         st.write(f"Digunakan dataset penjualan dari PT. SGMW Motor Indonesia dengan {formatted_number1} jumlah data.")
         st.dataframe(st.session_state['dataset1'])
-        st.dataframe(st.session_state['dealer1'])
+
     else:
         st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
 
@@ -23,13 +23,27 @@ with pro1:
         formatted_number2 = f"{jumlah_data2:,.0f}"
         st.write(f"Digunakan dataset purna jual dari PT. SGMW Motor Indonesia dengan {formatted_number2} jumlah data.")
         st.dataframe(st.session_state['dataset2'])
+
+    else:
+        st.error("Data purna jual belum diunggah. Harap unggah file terlebih dahulu.")
+ 
+with pro2:
+    if st.session_state['dataset1'] is not None:
+        st.subheader("Raw Data Dealer")
+        st.write(f"Digunakan dataset dealer yang didapatkan dari web wuling.id.")
+        st.dataframe(st.session_state['dealer1'])
+    else:
+        st.error("Data penjualan belum diunggah. Harap unggah file terlebih dahulu.")
+
+    if st.session_state['dataset2'] is not None:
+        st.subheader("Raw Data Dealer")
+        st.write(f"Digunakan dataset dealer yang didapatkan dari web wuling.id.")
         st.dataframe(st.session_state['dealer2'])
     else:
         st.error("Data purna jual belum diunggah. Harap unggah file terlebih dahulu.")
  
- 
 #CLEANING DATA
-with pro2:
+with pro3:
     if st.session_state['dataset1'] is not None:
         st.subheader("Cleaning Data")
         st.markdown("Dihapus kolom-kolom yang kosong dan tidak diperlukan dari data penjualan:")
@@ -42,6 +56,7 @@ with pro2:
                         'Contact number', 'Vehicle delivery date', 'Coupon code', 'Leasing'], axis=1)
         
         df1['Colour'] = df1['Colour'].replace('Candy white', 'Candy White')
+        df1['Payment method'] = df1['Payment method'].replace('Credit card', 'Credit')
         df1['Total penjualan']=1
         st.session_state['df1'] = df1
         st.dataframe(df1)
@@ -67,7 +82,7 @@ with pro2:
 
 
 #MERGING DATA
-with pro3:
+with pro4:
     if st.session_state['dataset1'] is not None:
         st.subheader("Merging Data")
         st.markdown("Dilakukan penggabungan data penjualan dengan data lokasi dealer:")
@@ -106,7 +121,7 @@ with pro3:
         st.error("Data purna jual belum diunggah. Harap unggah file terlebih dahulu.")
 
 #GROUPBY
-with pro4:
+with pro5:
     if st.session_state['dataset1'] is not None:
         st.subheader("Summary Data")
         st.markdown("Dilakukan agregasi data penjualan berdasarkan provinsi:")
