@@ -4,7 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import folium
-# from folium.plugins import MarkerCluster
 from streamlit_folium import folium_static
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -23,7 +22,7 @@ if st.session_state.df_combined is not None:
         gdf = st.session_state.gdf
 
         st.header("Peta Clustering Market Coverage Area Wuling di Indonesia")
-        k_slider = st.slider('Pillih jumlah klaster', 2, 10, value=2)
+        k_slider = st.slider('Pillih jumlah cluster', 2, 10, value=2)
 
         jumlah_data1 = len(st.session_state['df_penjualan1'])
         formatted_number1 = f"{jumlah_data1:,.0f}"
@@ -38,11 +37,23 @@ if st.session_state.df_combined is not None:
         clusters = pd.DataFrame(kmeans.labels_, columns=['Cluster'])
             
         data_cleansed = st.session_state.df_combined.copy()
-        data_cleansed['Cluster'] = clusters +1  
+        data_cleansed['Cluster'] = clusters +1
 
         finalpenjualan = pd.merge(st.session_state['df_penjualan1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
         finalservis = pd.merge(st.session_state['df_servis1'], data_cleansed[['Provinces','Cluster']], left_on='Provinces', right_on='Provinces', how='right')
-        gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis','Total dealer', 'Cluster']], how='left', left_on='name', right_on='Provinces')
+        
+        # Mengelompokkan data berdasarkan cluster dan mencari nilai maksimum dari penjualan setiap cluster
+        max_penjualan = data_cleansed.groupby('Cluster')['Total penjualan'].max()
+        # Mengurutkan berdasarkan nilai maksimum penjualan dari terbesar ke terkecil
+        urutan_penjualan = max_penjualan.sort_values(ascending=False)
+        st.write(urutan_penjualan)
+        cl = data_cleansed['Cluster']
+        rank = urutan_penjualan.index
+        cluster_to_rank = dict(zip(cl, rank))
+        data_cleansed['Rank'] = data_cleansed['Cluster'].map(cluster_to_rank)
+        data_cleansed['Rank'] = data_cleansed['Rank'] +1
+
+        gdf = gdf.merge(data_cleansed[['Provinces', 'Total penjualan', 'Total servis','Total dealer', 'Cluster','Rank']], how='left', left_on='name', right_on='Provinces')
 
         left_map, right_summary = st.columns([2, 0.65])
 
@@ -56,13 +67,13 @@ if st.session_state.df_combined is not None:
             attr='',
             ).add_to(map_indonesia)   
 
-            cluster_colors = {1: 'Red',
-                              2: 'Orange',
-                              3: 'Yellow',
-                              4: 'Green',  
-                              5: 'Blue', 
+            cluster_colors = {1: 'Yellow',
+                              2: 'Green',
+                              3: 'Orange',
+                              4: 'Red',
+                              5: 'Pink',  
                               6: 'Purple', 
-                              7: 'Pink',  
+                              7: 'Blue',  
                               8: 'Brown',  
                               9: 'Dark Brown', 
                               10:'Cream',  
@@ -147,15 +158,9 @@ if st.session_state.df_combined is not None:
             st.plotly_chart(jumlah_cluster)
         
 
-        nama_tabs=[f"Cluster {i+1}" for i in range (k_slider)]
+        nama_tabs=[f"Rank {i+1}" for i in range (k_slider)]
         tabs=st.tabs(nama_tabs)
-        # Mengelompokkan data berdasarkan cluster dan mencari nilai maksimum dari penjualan setiap cluster
-        max_penjualan = data_cleansed.groupby('Cluster')['Total penjualan'].max()
 
-        # Mengurutkan berdasarkan nilai maksimum penjualan dari terbesar ke terkecil
-        urutan_penjualan = max_penjualan.sort_values(ascending=True)
-        # urutan_penjualan['Urutan'] = urutan_penjualan['Cluster'].apply(lambda x: urutan_daerah.index(x))
-        # st.write(urutan_penjualan)
 
         for i in range(k_slider):
             
@@ -164,7 +169,9 @@ if st.session_state.df_combined is not None:
                 cluster_penjualan = finalpenjualan[finalpenjualan['Cluster'] == rank]
                 cluster_servis = finalservis[finalservis['Cluster'] == rank]
                 cluster_data = data_cleansed[data_cleansed['Cluster'] == rank]
-                st.write(f"### Cluster {i+1}:")
+                cl = cluster_data['Cluster'].unique()
+                cl_str = ', '.join(map(str, cl))
+                st.write(f"### Rank {i+1} (Cluster {cl_str}):")
                 st.subheader('Karakteristik Cluster')
                 min_sales = cluster_data['Total penjualan'].min()
                 max_sales = cluster_data['Total penjualan'].max()
@@ -172,9 +179,10 @@ if st.session_state.df_combined is not None:
                 max_servis = cluster_data['Total servis'].max()
                 min_dealer = cluster_data['Total dealer'].min()
                 max_dealer = cluster_data['Total dealer'].max()
+                
 
-                cl_number = i+1
-                color = st.session_state['cluster_colors'].get(cl_number, "Color not found")
+                
+                color = st.session_state['cluster_colors'].get(rank, "Color not found")
 
                 min_sales = f"{min_sales:,.0f}"
                 max_sales = f"{max_sales:,.0f}"
@@ -183,7 +191,7 @@ if st.session_state.df_combined is not None:
                 min_dealer = f"{min_dealer:,.0f}"
                 max_dealer = f"{max_dealer:,.0f}"
                 
-                st.write(f"Cluster {i+1} {color}: Cluster ini berisi provinsi dengan dealer dengan jumlah mulai dari {min_dealer} hingga {max_dealer}, penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} servis mobil selama 6 bulan")
+                st.write(f"Cluster {cl_str} {color}: Cluster ini berisi provinsi dengan dealer dengan jumlah mulai dari {min_dealer} hingga {max_dealer}, penjualan mulai dari {min_sales} - {max_sales} mobil dan melayani {min_servis} - {max_servis} servis mobil selama 6 bulan")
                 
                 with st.expander('Lihat Data per cluster'):
                     st.write("", cluster_data)
@@ -243,7 +251,7 @@ if st.session_state.df_combined is not None:
                     st.plotly_chart(fig_cl_kanan)
             
         # Visualisasi hasil clustering (scatter plot)
-        with st.expander('Grafik Scatter Plot Klaster'):
+        with st.expander('Grafik Scatter Plot Cluster'):
             st.subheader('Visualisasi Hasil Clustering')
             fig, ax = plt.subplots(figsize=(14, 6))
             sns.scatterplot(x=data_cleansed.iloc[:, 1], y=data_cleansed.iloc[:, 2], hue=data_cleansed['Cluster'], palette=cluster_colors, ax=ax)
